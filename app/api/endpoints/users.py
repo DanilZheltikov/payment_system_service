@@ -9,6 +9,7 @@ from app.core.user import get_current_user, get_current_superuser
 from app.crud.user import user_crud
 from app.models import User
 from app.schemas.user import UserRead, UserCreate, UserUpdate
+from app.service.user import user_create_service
 
 router = APIRouter()
 SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
@@ -60,5 +61,5 @@ async def create_user(
     user: UserCreate,
     session: SessionDep,
 ):
-    new_user = await user_crud.create(user, session)
-    return new_user
+
+    return await user_create_service(user_in=user, session=session)
