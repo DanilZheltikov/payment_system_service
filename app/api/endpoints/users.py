@@ -1,19 +1,11 @@
-from typing import Annotated
-
 from fastapi import APIRouter, Depends
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.core.db import get_async_session
-from app.core.user import get_current_user, get_current_superuser
+from app.dependencies import CurrentUserDep, get_current_superuser, SessionDep
 from app.crud.user import user_crud
-from app.models import User
 from app.schemas.user import UserRead, UserCreate, UserUpdate
 from app.service.user import user_create_service
 
 router = APIRouter()
-SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
-CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
 
 @router.patch(
@@ -57,9 +49,5 @@ async def read_current_user(
     response_model=UserRead,
     dependencies=[Depends(get_current_superuser)]
 )
-async def create_user(
-    user: UserCreate,
-    session: SessionDep,
-):
-
+async def create_user(user: UserCreate, session: SessionDep):
     return await user_create_service(user_in=user, session=session)

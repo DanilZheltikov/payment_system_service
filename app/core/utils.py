@@ -14,7 +14,7 @@ def get_password_hash(password):
 
 def set_refresh_cookie(response: Response, token: str):
     response.set_cookie(
-        key="token",
+        key='refresh_token',
         value=token,
         httponly=True,
         secure=False,

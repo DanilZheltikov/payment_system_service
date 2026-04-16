@@ -2,10 +2,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Response
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import get_async_session
-from app.core.security import authenticate_user, get_refresh_token_from_cookie
+from app.dependencies import RefreshTokenDep, SessionDep
+from app.core.security import authenticate_user
 from app.core.utils import set_refresh_cookie
 from app.schemas.token import AccessToken
 from app.schemas.user import UserCreate, UserRead
@@ -13,10 +12,6 @@ from app.service.user import user_create_service
 from app.service.token import rotate_refresh_token_service
 
 router = APIRouter()
-
-FormDataDep = Annotated[OAuth2PasswordRequestForm, Depends()]
-RefreshTokenDep = Annotated[str, Depends(get_refresh_token_from_cookie)]
-SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 
 
 @router.post('/register', response_model=UserRead)
@@ -27,7 +22,7 @@ async def register_user(user: UserCreate, session: SessionDep):
 
 @router.post('/login', response_model=AccessToken)
 async def login(
-    form_data: FormDataDep,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: SessionDep,
     response: Response
 ):
