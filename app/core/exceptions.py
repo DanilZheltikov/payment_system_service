@@ -1,12 +1,12 @@
 from fastapi import HTTPException, status
 
 CredentialsException = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
+    status_code=status.HTTP_400_BAD_REQUEST,
     detail='Неверные учетные данные',
     headers={'WWW-Authenticate': 'Bearer'}
 )
 TokenExpiredException = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
+    status_code=status.HTTP_400_BAD_REQUEST,
     detail='Токен просрочен',
     headers={'WWW-Authenticate': 'Bearer'}
 )
@@ -19,7 +19,7 @@ TokenRevokedException = HTTPException(
     detail='Токен отозван, залогиньтесь заново'
 )
 InvalidTokenException = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
+    status_code=status.HTTP_400_BAD_REQUEST,
     detail='Невалидный токен'
 )
 UserExistsException = HTTPException(
@@ -27,6 +27,6 @@ UserExistsException = HTTPException(
     detail='Такой пользователь уже существует.'
 )
 MissingTokenException = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
+    status_code=status.HTTP_400_BAD_REQUEST,
     detail='Refresh Token не найден в куках'
 )
