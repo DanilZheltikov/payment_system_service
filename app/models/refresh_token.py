@@ -16,7 +16,8 @@ class RefreshToken(Base):
         ForeignKey(
             'user.id',
             ondelete='CASCADE'
-        )
+        ),
+        unique=True
     )
     user: Mapped['User'] = relationship(back_populates='refresh_token')
     expires: Mapped[datetime] = mapped_column(DateTime, nullable=False)

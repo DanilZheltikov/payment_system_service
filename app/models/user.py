@@ -20,7 +20,8 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     refresh_token: Mapped['RefreshToken'] = relationship(
         back_populates='user',
-        cascade='all, delete-orphan'
+        cascade='all, delete-orphan',
+        uselist=False
     )
     accounts: Mapped[List['Account']] = relationship(
         back_populates='user',
@@ -33,4 +34,4 @@ class User(Base):
 
     @property
     def full_name(self):
-        return f'{self.first_name} {self.last_name}'.capitalize()
+        return f'{self.first_name} {self.last_name}'.title()

@@ -1,8 +1,8 @@
-"""empty message
+"""add_unique_constraint_to_refresh_token
 
-Revision ID: fc2e22cdb1f8
+Revision ID: 227f67cec754
 Revises: 
-Create Date: 2026-04-14 15:18:45.989816
+Create Date: 2026-04-16 15:36:36.928393
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'fc2e22cdb1f8'
+revision: str = '227f67cec754'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -49,7 +49,8 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('hashed_token')
+    sa.UniqueConstraint('hashed_token'),
+    sa.UniqueConstraint('user_id')
     )
     op.create_table('payment',
     sa.Column('transaction_id', sa.String(length=255), nullable=False),

@@ -33,7 +33,7 @@ def create_jwt(token_type: str, token_data: dict) -> str:
 
 
 def create_access_token(
-    subject: str,
+    subject: int,
     expires_minutes: int = settings.access_token_expire_minutes
 ) -> str:
     expire = (
@@ -53,15 +53,21 @@ async def create_refresh_token(
     session: AsyncSession,
     expires_minutes: int = settings.refresh_token_expire_minutes
 ) -> str:
+    await session.refresh(user, ['refresh_token'])
+
     expire = (
         datetime.now(tz=timezone.utc)
         + timedelta(minutes=expires_minutes)
     )
     jwt_payload = {
         'exp': expire,
-        'sub': str(user.id)
+        'sub': user.id
     }
     refresh_token = create_jwt(token_type='refresh', token_data=jwt_payload)
+
+    if user.refresh_token:
+        await refresh_token_crud.remove(user.refresh_token, session)
+        await session.flush()
 
     await refresh_token_crud.create(
         obj_in=RefreshTokenCreate(

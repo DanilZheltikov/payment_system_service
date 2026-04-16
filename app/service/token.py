@@ -27,10 +27,10 @@ async def rotate_refresh_token_service(
     if refresh_token.revoked:
         raise TokenRevokedException
 
-    user = refresh_token.user
-    await refresh_token_crud.remove(refresh_token, session)
-
     return Token(
-        access_token=create_access_token(user.id),
-        refresh_token=await create_refresh_token(user=user, session=session)
+        access_token=create_access_token(refresh_token.user_id),
+        refresh_token=await create_refresh_token(
+            user=refresh_token.user,
+            session=session
+        )
     )
