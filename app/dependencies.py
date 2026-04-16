@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import Cookie, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,7 +14,10 @@ async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     session: Annotated[AsyncSession, Depends(get_async_session)]
 ) -> User:
-    return await authenticate_user_from_token(token, session)
+    user = await authenticate_user_from_token(token, session)
+    if not user.is_active:
+        raise exceptions.UserInactiveException
+    return user
 
 
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
@@ -24,10 +27,7 @@ async def get_current_superuser(
     current_user: CurrentUserDep
 ) -> User:
     if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail='Недостаточно прав для выполнения действия'
-        )
+        raise exceptions.PermissionDeniedException
     return current_user
 
 
