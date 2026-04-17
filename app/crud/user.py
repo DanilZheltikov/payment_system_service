@@ -1,8 +1,10 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload, selectinload
 
+from app.core.exceptions import NotFoundException
 from app.core.utils import get_password_hash
 from app.crud.base import CRUDBase
 from app.models.user import User
@@ -30,9 +32,40 @@ class UserCRUD(CRUDBase):
         email: str,
         session: AsyncSession,
     ) -> Optional[User]:
-        stmt = select(User).where(email == User.email)
-        user = await session.execute(stmt)
-        return user.scalars().first()
+        stmt = select(self.model).where(email == self.model.email)
+        result = await session.execute(stmt)
+        return result.scalars().first()
+
+    async def get_all_users_with_accounts(
+        self,
+        limit: int,
+        offset: int,
+        session: AsyncSession
+    ) -> List[User]:
+        stmt = (
+            select(self.model)
+            .options(selectinload(self.model.accounts))
+            .offset(offset)
+            .limit(limit)
+        )
+        results = await session.execute(stmt)
+        return list(results.scalars().all())
+
+    async def get_user_with_accounts(
+        self,
+        user_id: int,
+        session: AsyncSession
+    ) -> Optional[User]:
+        stmt = (
+            select(self.model)
+            .where(self.model.id == user_id)
+            .options(joinedload(self.model.accounts))
+        )
+        result = await session.execute(stmt)
+        user = result.unique().scalar_one_or_none()
+        if not user:
+            raise NotFoundException(detail='Пользователя не существует')
+        return user
 
 
 user_crud = UserCRUD(User)

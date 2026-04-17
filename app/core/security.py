@@ -145,18 +145,20 @@ async def check_refresh_token(
         if payload.get('token_type') != 'refresh':
             raise exceptions.CredentialsException
         if not await user_crud.get(int(user_id), session):
-            raise exceptions.UserNotExists
+            raise exceptions.NotFoundException(
+                detail='Пользователя не существует'
+            )
 
     except jwt.ExpiredSignatureError:
-        raise exceptions.TokenExpiredException
+        raise exceptions.TokenExpiredException()
 
     except jwt.InvalidTokenError:
-        raise exceptions.InvalidTokenException
+        raise exceptions.InvalidTokenException()
 
 
 def get_refresh_token_from_cookie(
         token: Annotated[str | None, Cookie()] = None
 ) -> str:
     if not token:
-        raise exceptions.MissingTokenException
+        raise exceptions.MissingTokenException()
     return token

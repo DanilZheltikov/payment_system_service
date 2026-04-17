@@ -1,5 +1,7 @@
-from fastapi import APIRouter
-from app.api.endpoints import auth_router, users_router
+from fastapi import APIRouter, Depends
+
+from app.api.v1.endpoints import admin_router, auth_router, users_router
+from app.dependencies import get_current_superuser
 
 main_router = APIRouter()
 
@@ -11,6 +13,13 @@ main_router.include_router(
 
 main_router.include_router(
     users_router,
-    prefix='/users',
-    tags=['Users']
+    prefix='/user',
+    tags=['User']
+)
+
+main_router.include_router(
+    admin_router,
+    prefix='/admin/users',
+    dependencies=[Depends(get_current_superuser)],
+    tags=['Admin']
 )

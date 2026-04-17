@@ -1,4 +1,8 @@
+from typing import List
+
 from pydantic import BaseModel, ConfigDict, EmailStr
+
+from app.schemas.account import Account
 
 
 class UserCreate(BaseModel):
@@ -26,3 +30,7 @@ class UserRead(UserUpdate):
     full_name: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserWithAccountsRead(UserRead):
+    accounts: List[Account] = []

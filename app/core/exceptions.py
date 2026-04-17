@@ -27,9 +27,9 @@ class MissingTokenException(BaseAuthException):
     detail = 'Refresh Token не найден в куках'
 
 
-class UserNotFound(HTTPException):
-    status_code = status.HTTP_404_NOT_FOUND,
-    detail = 'Пользователя не существует',
+class NotFoundException(HTTPException):
+    status_code = status.HTTP_404_NOT_FOUND
+    detail = 'Объекта не существует'
 
 
 class InvalidTokenException (HTTPException):
