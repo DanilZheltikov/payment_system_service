@@ -16,21 +16,14 @@ router = APIRouter()
 
 
 @router.patch('/{user_id}', response_model=UserRead)
-async def update(
-    user_id: int,
-    obj_in: UserUpdate,
-    session: SessionDep
-):
+async def update_user(user_id: int, obj_in: UserUpdate, session: SessionDep):
     user = await user_crud.get(user_id, session)
     updated_user = await user_crud.update(user, obj_in, session)
     return updated_user
 
 
 @router.delete('/{user_id}', response_model=UserRead)
-async def remove_user(
-    user_id: int,
-    session: SessionDep
-):
+async def remove_user(user_id: int, session: SessionDep):
     user = await user_crud.get(user_id, session)
     user = await user_crud.remove(user, session)
     return user
