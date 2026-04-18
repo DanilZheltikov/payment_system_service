@@ -17,5 +17,16 @@ class PaymentCRUD(CRUDBase):
         result = await session.execute(stmt)
         return list(result.scalars().all())
 
+    async def is_exists(
+        self,
+        transaction_id: str,
+        session: AsyncSession
+    ) -> bool:
+        stmt = (
+            select(self.model)
+            .where(self.model.transaction_id == transaction_id).exists()
+        )
+        return await session.scalar(select(stmt))
+
 
 payment_crud = PaymentCRUD(Payment)

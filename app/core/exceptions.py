@@ -50,3 +50,13 @@ class PermissionDeniedException(HTTPException):
 class UserInactiveException(HTTPException):
     status_code = status.HTTP_403_FORBIDDEN
     detail = 'Аккаунт деактивирован'
+
+
+class InvalidSignatureException(HTTPException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = 'Неверная сигнатура вебхука'
+
+
+class PaymentAlreadyProcessedException(HTTPException):
+    status_code = status.HTTP_200_OK
+    detail = 'Платеж уже зачислен'

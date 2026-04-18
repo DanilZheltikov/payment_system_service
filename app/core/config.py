@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     app_title: str = 'Апи для заметок'
     database_url: str
     secret_key: str
+    secret_key_to_webhook: str
     algorithm: str
     access_token_expire_minutes: int
     refresh_token_expire_minutes: int
