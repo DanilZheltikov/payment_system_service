@@ -6,8 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.dependencies import RefreshTokenDep, SessionDep
 from app.core.security import authenticate_user
 from app.core.utils import set_refresh_cookie
-from app.schemas.token import AccessToken
-from app.schemas.user import UserCreate, UserRead
+from app.schemas import AccessToken, UserCreate, UserRead
 from app.service.user import user_create_service
 from app.service.token import rotate_refresh_token_service
 

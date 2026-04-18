@@ -1,7 +1,7 @@
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, ForeignKey, Numeric, String
+from sqlalchemy import CheckConstraint, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 
 class Account(Base):
-    name: Mapped[str] = mapped_column(String(120), nullable=False)
     balance: Mapped[Decimal] = mapped_column(
         Numeric(precision=15, scale=2),
         CheckConstraint('balance >= 0', name='check_balance_non_negative'),
@@ -23,4 +22,4 @@ class Account(Base):
         ForeignKey('user.id', ondelete='CASCADE')
     )
     user: Mapped['User'] = relationship(back_populates='accounts')
-    payment: Mapped['Payment'] = relationship(back_populates='account')
+    payments: Mapped[List['Payment']] = relationship(back_populates='account')

@@ -2,9 +2,9 @@ from typing import List
 
 from fastapi import APIRouter
 
-from app.crud.user import user_crud
+from app.crud import user_crud
 from app.dependencies import SessionDep
-from app.schemas.user import (
+from app.schemas import (
     UserRead,
     UserCreate,
     UserUpdate,

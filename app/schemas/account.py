@@ -1,14 +1,10 @@
 from decimal import Decimal
-from typing import List
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.payment import PaymentBase
 
-
-class Account(BaseModel):
-    name: str
+class AccountSchema(BaseModel):
+    id: int
     balance: Decimal
-    payments: List[PaymentBase] = []
 
     model_config = ConfigDict(from_attributes=True)

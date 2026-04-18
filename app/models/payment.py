@@ -26,7 +26,7 @@ class Payment(Base):
         ForeignKey('account.id'),
         nullable=False
     )
-    account: Mapped['Account'] = relationship(back_populates='payment')
+    account: Mapped['Account'] = relationship(back_populates='payments')
     user_id: Mapped[int] = mapped_column(
         ForeignKey('user.id'),
         nullable=False

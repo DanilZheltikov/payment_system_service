@@ -7,8 +7,8 @@ from sqlalchemy.orm import joinedload, selectinload
 from app.core.exceptions import NotFoundException
 from app.core.utils import get_password_hash
 from app.crud.base import CRUDBase
-from app.models.user import User
-from app.schemas.user import UserCreate, UserRead
+from app.models import User
+from app.schemas import UserCreate, UserRead
 
 
 class UserCRUD(CRUDBase):
@@ -48,8 +48,8 @@ class UserCRUD(CRUDBase):
             .offset(offset)
             .limit(limit)
         )
-        results = await session.execute(stmt)
-        return list(results.scalars().all())
+        result = await session.execute(stmt)
+        return list(result.scalars().all())
 
     async def get_user_with_accounts(
         self,

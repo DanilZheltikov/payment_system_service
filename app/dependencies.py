@@ -16,7 +16,7 @@ async def get_current_user(
 ) -> User:
     user = await authenticate_user_from_token(token, session)
     if not user.is_active:
-        raise exceptions.UserInactiveException
+        raise exceptions.UserInactiveException()
     return user
 
 
@@ -27,7 +27,7 @@ async def get_current_superuser(
     current_user: CurrentUserDep
 ) -> User:
     if not current_user.is_admin:
-        raise exceptions.PermissionDeniedException
+        raise exceptions.PermissionDeniedException()
     return current_user
 
 
@@ -40,7 +40,7 @@ def get_refresh_token_from_cookie(
         token: Annotated[str | None, Cookie(alias='refresh_token')] = None
 ) -> str:
     if not token:
-        raise exceptions.MissingTokenException
+        raise exceptions.MissingTokenException()
     return token
 
 

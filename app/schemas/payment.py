@@ -3,7 +3,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class PaymentBase(BaseModel):
+class PaymentRead(BaseModel):
     id: int
     amount: Decimal
 

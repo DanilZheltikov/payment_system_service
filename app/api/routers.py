@@ -13,8 +13,8 @@ main_router.include_router(
 
 main_router.include_router(
     users_router,
-    prefix='/user',
-    tags=['User']
+    prefix='/me',
+    tags=['Users']
 )
 
 main_router.include_router(
