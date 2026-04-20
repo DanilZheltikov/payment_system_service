@@ -10,6 +10,6 @@ async def user_create_service(
     user_in: UserCreate,
     session: AsyncSession
 ) -> User:
-    if await user_crud.get_user_by_email(user_in.email, session=session):
+    if await user_crud.is_exists(user_in.email, session):
         raise exceptions.UserExistsException()
     return await user_crud.create(user_in=user_in, session=session)

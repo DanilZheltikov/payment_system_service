@@ -20,9 +20,12 @@ class RefreshToken(Base):
         unique=True
     )
     user: Mapped['User'] = relationship(back_populates='refresh_token')
-    expires: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    expires: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc)
     )
     revoked: Mapped[bool] = mapped_column(Boolean, default=False)

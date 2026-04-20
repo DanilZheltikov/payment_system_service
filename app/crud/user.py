@@ -66,6 +66,17 @@ class UserCRUD(CRUDBase):
         user = result.unique().scalar_one_or_none()
         return user
 
+    async def is_exists(
+        self,
+        email: str,
+        session: AsyncSession
+    ) -> bool:
+        stmt = (
+            select(self.model)
+            .where(self.model.email == email)
+            .exists()
+        )
+        return await session.scalar(select(stmt))
 
 
 user_crud = UserCRUD(User)
