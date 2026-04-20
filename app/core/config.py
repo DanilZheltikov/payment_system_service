@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_title: str = 'Апи для заметок'
+    app_title: str = 'Payment System Service'
     database_url: str
     secret_key: str
     secret_key_to_webhook: str

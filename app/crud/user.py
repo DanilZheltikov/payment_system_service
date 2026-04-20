@@ -67,4 +67,5 @@ class UserCRUD(CRUDBase):
         return user
 
 
+
 user_crud = UserCRUD(User)
