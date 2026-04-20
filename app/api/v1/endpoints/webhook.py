@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.dependencies import SessionDep
 from app.schemas import PaymentWebhook
-from app.service.webhook import process_webhook
+from app.service.webhook import process_payment
 
 router = APIRouter()
 
@@ -14,4 +14,4 @@ async def webhook_handle(
     payment: PaymentWebhook,
     session: SessionDep
 ) -> Dict[str, str]:
-    return await process_webhook(payment, session)
+    return await process_payment(payment, session)

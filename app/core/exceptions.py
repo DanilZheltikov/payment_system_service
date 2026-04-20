@@ -1,6 +1,14 @@
 from fastapi import HTTPException, status
 
 
+class BaseException(HTTPException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = 'Базовое исключение'
+
+    def __init__(self):
+        super().__init__(self.status_code, self.detail)
+
+
 class BaseAuthException(HTTPException):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = 'Ошибка аутентификации'
@@ -23,40 +31,37 @@ class TokenRevokedException(BaseAuthException):
 
 
 class MissingTokenException(BaseAuthException):
-    status_code = status.HTTP_401_UNAUTHORIZED
     detail = 'Refresh Token не найден в куках'
 
 
-class NotFoundException(HTTPException):
+class InvalidTokenException (BaseException):
+    detail = 'Невалидный токен'
+
+
+class InvalidSignatureException(BaseException):
+    detail = 'Неверная сигнатура вебхука'
+
+
+class NotFoundException(BaseException):
     status_code = status.HTTP_404_NOT_FOUND
     detail = 'Объекта не существует'
 
 
-class InvalidTokenException (HTTPException):
-    status_code = status.HTTP_400_BAD_REQUEST,
-    detail = 'Невалидный токен'
-
-
-class UserExistsException(HTTPException):
+class UserExistsException(BaseException):
     status_code = status.HTTP_409_CONFLICT
     detail = 'Такой пользователь уже существует.'
 
 
-class PermissionDeniedException(HTTPException):
+class PermissionDeniedException(BaseException):
     status_code = status.HTTP_403_FORBIDDEN
     detail = 'Недостаточно прав для выполнения действия'
 
 
-class UserInactiveException(HTTPException):
+class UserInactiveException(BaseException):
     status_code = status.HTTP_403_FORBIDDEN
     detail = 'Аккаунт деактивирован'
 
 
-class InvalidSignatureException(HTTPException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    detail = 'Неверная сигнатура вебхука'
-
-
-class PaymentAlreadyProcessedException(HTTPException):
+class PaymentAlreadyProcessedException(BaseException):
     status_code = status.HTTP_200_OK
     detail = 'Платеж уже зачислен'

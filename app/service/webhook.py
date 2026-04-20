@@ -15,7 +15,7 @@ async def process_payment(
     payment: PaymentWebhook,
     session: AsyncSession,
 ) -> dict[str, str]:
-    secret_key = settings.secret_key_to_payment
+    secret_key = settings.secret_key_to_webhook
     amount_str = f'{payment.amount.normalize():f}'
     expected_sign = sha256(
         (
