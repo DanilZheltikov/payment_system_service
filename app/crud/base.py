@@ -84,3 +84,19 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await session.delete(db_obj)
         await session.commit()
         return db_obj
+
+    async def get_multi_by_user(
+        self,
+        user_id: int,
+        session: AsyncSession,
+        limit: int,
+        offset: int
+    ) -> List[ModelType]:
+        stmt = (
+            select(self.model)
+            .where(self.model.user_id == user_id)
+            .limit(limit)
+            .offset(offset)
+        )
+        result = await session.execute(stmt)
+        return list(result.scalars().all())
