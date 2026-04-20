@@ -1,5 +1,13 @@
+from functools import wraps
+from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
+
 from fastapi import Response
 from pwdlib import PasswordHash
+
+from app.core.exceptions import NotFoundException
+
+P = ParamSpec('P')
+T = TypeVar('T')
 
 password_hash = PasswordHash.recommended()
 
@@ -21,3 +29,18 @@ def set_refresh_cookie(response: Response, token: str):
         samesite="lax",
         max_age=60 * 60 * 24
     )
+
+
+def or_404(
+    func: Callable[P, Coroutine[Any, Any, T | None]]
+) -> Callable[P, Coroutine[Any, Any, T | None]]:
+    """
+    Проверяет, что объект существует, иначе выбрасывает NotFoundException.
+    """
+    @wraps(func)
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+        obj = await func(*args, **kwargs)
+        if not obj:
+            raise NotFoundException()
+        return obj
+    return wrapper

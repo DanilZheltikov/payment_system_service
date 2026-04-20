@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import Base
+from app.core.utils import or_404
 from app.models.user import User
 
 ModelType = TypeVar('ModelType', bound=Base)
@@ -23,6 +24,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
         self.model = model
 
+    @or_404
     async def get(
             self,
             obj_id: int,

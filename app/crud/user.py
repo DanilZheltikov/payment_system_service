@@ -1,11 +1,10 @@
-from typing import List, Optional
+from typing import List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
-from app.core.exceptions import NotFoundException
-from app.core.utils import get_password_hash
+from app.core.utils import get_password_hash, or_404
 from app.crud.base import CRUDBase
 from app.models import User
 from app.schemas import UserCreate, UserRead
@@ -27,11 +26,12 @@ class UserCRUD(CRUDBase):
         await session.refresh(user_db)
         return user_db
 
+    @or_404
     async def get_user_by_email(
         self,
         email: str,
         session: AsyncSession,
-    ) -> Optional[User]:
+    ) -> User:
         stmt = select(self.model).where(email == self.model.email)
         result = await session.execute(stmt)
         return result.scalars().first()
@@ -51,11 +51,12 @@ class UserCRUD(CRUDBase):
         result = await session.execute(stmt)
         return list(result.scalars().all())
 
+    @or_404
     async def get_user_with_accounts(
         self,
         user_id: int,
         session: AsyncSession
-    ) -> Optional[User]:
+    ) -> User:
         stmt = (
             select(self.model)
             .where(self.model.id == user_id)
@@ -63,8 +64,6 @@ class UserCRUD(CRUDBase):
         )
         result = await session.execute(stmt)
         user = result.unique().scalar_one_or_none()
-        if not user:
-            raise NotFoundException(detail='Пользователя не существует')
         return user
 
 
