@@ -15,15 +15,13 @@ async def process_payment(
     payment: PaymentWebhook,
     session: AsyncSession,
 ) -> dict[str, str]:
-    secret_key = settings.secret_key_to_webhook
-    amount_str = f'{payment.amount.normalize():f}'
     expected_sign = sha256(
         (
             f'{payment.account_id}'
-            f'{amount_str}'
+            f'{payment.amount.normalize():f}'
             f'{payment.transaction_id}'
             f'{payment.user_id}'
-            f'{secret_key}'
+            f'{settings.secret_key_to_webhook}'
         ).encode()
     ).hexdigest()
     if payment.signature != expected_sign:

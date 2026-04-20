@@ -3,19 +3,22 @@ from hashlib import sha256
 from typing import Annotated
 
 import jwt
-
 from fastapi import Cookie
 from fastapi.security import OAuth2PasswordBearer
-
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import exceptions
 from app.core.config import settings
 from app.core.utils import verify_password
-from app.crud.refresh_token import refresh_token_crud
-from app.crud.user import user_crud
+from app.crud import refresh_token_crud, user_crud
 from app.models import User
-from app.schemas.token import RefreshTokenCreate, Token
+from app.schemas import (
+    AccessTokenPayload,
+    RefreshTokenCreate,
+    RefreshTokenPayload,
+    Token
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
@@ -86,27 +89,25 @@ async def authenticate_user_from_token(
 ) -> User:
 
     try:
-        payload = jwt.decode(
-            token,
-            settings.secret_key,
-            algorithms=[settings.algorithm]
+        token_data = AccessTokenPayload(
+            **jwt.decode(
+                token,
+                settings.secret_key,
+                algorithms=[settings.algorithm]
+            )
         )
-        user_id = payload.get('sub')
 
-        if not user_id:
-            raise exceptions.CredentialsException
-        if payload.get('token_type') != 'access':
-            raise exceptions.CredentialsException
-        user = await user_crud.get(int(user_id), session)
-        if not user:
-            raise exceptions.CredentialsException
-        return user
+        return await user_crud.get(token_data.sub, session)
 
     except jwt.ExpiredSignatureError:
-        raise exceptions.TokenExpiredException
+        raise exceptions.TokenExpiredException()
 
-    except jwt.InvalidTokenError:
-        raise exceptions.CredentialsException
+    except (
+        jwt.InvalidTokenError,
+        ValidationError,
+        exceptions.NotFoundException
+    ):
+        raise exceptions.CredentialsException()
 
 
 async def authenticate_user(
@@ -117,8 +118,8 @@ async def authenticate_user(
 
     user = await user_crud.get_user_by_email(email=email, session=session)
 
-    if not user or not verify_password(password, user.hashed_password):
-        raise exceptions.CredentialsException
+    if not verify_password(password, user.hashed_password):
+        raise exceptions.CredentialsException()
 
     access_token = create_access_token(str(user.id))
     refresh_token = await create_refresh_token(user, session)
@@ -129,30 +130,25 @@ async def authenticate_user(
     )
 
 
-async def check_refresh_token(
-    token: str,
-    session: AsyncSession
-) -> None:
+async def check_refresh_token(token: str, session: AsyncSession):
     try:
-        payload = jwt.decode(
-            jwt=token,
-            key=settings.secret_key,
-            algorithms=[settings.algorithm]
-        )
-
-        if not (user_id := payload.get('sub')):
-            raise exceptions.CredentialsException
-        if payload.get('token_type') != 'refresh':
-            raise exceptions.CredentialsException
-        if not await user_crud.get(int(user_id), session):
-            raise exceptions.NotFoundException(
-                detail='Пользователя не существует'
+        token_data = RefreshTokenPayload(
+            **jwt.decode(
+                jwt=token,
+                key=settings.secret_key,
+                algorithms=[settings.algorithm]
             )
+        )
+        await user_crud.get(token_data.sub, session)
 
     except jwt.ExpiredSignatureError:
         raise exceptions.TokenExpiredException()
 
-    except jwt.InvalidTokenError:
+    except (
+        jwt.InvalidTokenError,
+        ValidationError,
+        exceptions.NotFoundException
+    ):
         raise exceptions.InvalidTokenException()
 
 

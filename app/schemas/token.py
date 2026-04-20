@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 
 from pydantic import BaseModel
 
@@ -17,3 +17,15 @@ class RefreshTokenCreate(BaseModel):
     hashed_token: str
     user_id: int
     expires: datetime
+
+
+class AccessTokenPayload(BaseModel):
+    sub: int
+    token_type: Literal['access']
+    exp: datetime
+
+
+class RefreshTokenPayload(BaseModel):
+    sub: int
+    token_type: Literal['refresh']
+    exp: datetime
