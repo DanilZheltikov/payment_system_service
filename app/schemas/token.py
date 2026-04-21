@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import Optional, Literal
+from typing import Annotated, Optional, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, BeforeValidator
+
+ForceStr = Annotated[str, BeforeValidator(lambda value: str(value))]
 
 
 class AccessToken(BaseModel):
@@ -19,13 +21,20 @@ class RefreshTokenCreate(BaseModel):
     expires: datetime
 
 
-class AccessTokenPayload(BaseModel):
+class BaseTokenPayload(BaseModel):
     sub: int
-    token_type: Literal['access']
     exp: datetime
 
 
-class RefreshTokenPayload(BaseModel):
-    sub: int
-    token_type: Literal['refresh']
+class AccessTokenPayload(BaseTokenPayload):
+    token_type: Literal['access'] = 'access'
+
+
+class RefreshTokenPayload(BaseTokenPayload):
+    token_type: Literal['refresh'] = 'refresh'
+
+
+class TokenCreatePayload(BaseModel):
+    sub: ForceStr
     exp: datetime
+    token_type: Literal['access', 'refresh']

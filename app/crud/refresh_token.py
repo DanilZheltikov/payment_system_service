@@ -1,6 +1,6 @@
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.core.utils import or_404
 from app.crud.base import CRUDBase
@@ -15,12 +15,17 @@ class RefreshTokenCRUD(CRUDBase):
         session: AsyncSession
     ) -> RefreshToken:
         stmt = (
-            select(RefreshToken)
-            .where(token_hash == RefreshToken.hashed_token)
-            .options(selectinload(RefreshToken.user))
+            select(self.model)
+            .where(self.model.hashed_token == token_hash)
+            .options(joinedload(self.model.user))
         )
         refresh_token = await session.execute(stmt)
         return refresh_token.scalars().first()
+
+    async def remove_by_user_id(self, user_id: int, session: AsyncSession):
+        stmt = delete(self.model).where(self.model.user_id == user_id)
+        await session.execute(stmt)
+        await session.flush()
 
 
 refresh_token_crud = RefreshTokenCRUD(RefreshToken)

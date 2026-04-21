@@ -1,9 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
-from typing import Annotated
 
 import jwt
-from fastapi import Cookie
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,19 +15,17 @@ from app.schemas import (
     AccessTokenPayload,
     RefreshTokenCreate,
     RefreshTokenPayload,
-    Token
+    Token,
+    TokenCreatePayload
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 
-def create_jwt(token_type: str, token_data: dict) -> str:
-    jwt_payload = {
-        'token_type': token_type,
-    }
-    jwt_payload.update(token_data)
+def create_jwt(payload: TokenCreatePayload) -> str:
+
     return jwt.encode(
-        payload=jwt_payload,
+        payload=payload.model_dump(),
         key=settings.secret_key,
         algorithm=settings.algorithm
     )
@@ -43,12 +39,9 @@ def create_access_token(
         datetime.now(tz=timezone.utc)
         + timedelta(minutes=expires_minutes)
     )
-    jwt_payload = {
-        'exp': expire,
-        'sub': subject
-    }
-
-    return create_jwt(token_type='access', token_data=jwt_payload)
+    return create_jwt(
+        TokenCreatePayload(sub=subject, exp=expire, token_type='access')
+    )
 
 
 async def create_refresh_token(
@@ -62,15 +55,10 @@ async def create_refresh_token(
         datetime.now(tz=timezone.utc)
         + timedelta(minutes=expires_minutes)
     )
-    jwt_payload = {
-        'exp': expire,
-        'sub': user.id
-    }
-    refresh_token = create_jwt(token_type='refresh', token_data=jwt_payload)
-
-    if user.refresh_token:
-        await refresh_token_crud.remove(user.refresh_token, session)
-        await session.flush()
+    refresh_token = create_jwt(
+        TokenCreatePayload(sub=user.id, exp=expire, token_type='refresh')
+    )
+    await refresh_token_crud.remove_by_user_id(user.id, session)
 
     await refresh_token_crud.create(
         obj_in=RefreshTokenCreate(
@@ -150,11 +138,3 @@ async def check_refresh_token(token: str, session: AsyncSession):
         exceptions.NotFoundException
     ):
         raise exceptions.InvalidTokenException()
-
-
-def get_refresh_token_from_cookie(
-        token: Annotated[str | None, Cookie()] = None
-) -> str:
-    if not token:
-        raise exceptions.MissingTokenException()
-    return token
