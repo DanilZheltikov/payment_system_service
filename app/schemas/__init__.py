@@ -4,7 +4,6 @@ from .token import (  # noqa
     AccessToken,
     AccessTokenPayload,
     RefreshTokenCreate,
-    RefreshTokenPayload,
     Token,
     TokenCreatePayload
 )
