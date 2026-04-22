@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class RefreshToken(Base):
+    """Модель refresh token'а."""
+
     hashed_token: Mapped[str] = mapped_column(String, unique=True)
     user_id: Mapped[int] = mapped_column(
         ForeignKey(

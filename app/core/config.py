@@ -2,6 +2,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Настройки приложения."""
+
     app_title: str = 'Payment System Service'
     database_url: str
     secret_key: str

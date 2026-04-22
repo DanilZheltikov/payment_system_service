@@ -16,6 +16,7 @@ async def rotate_refresh_token_service(
     token: str,
     session: AsyncSession
 ) -> Token:
+    """Сервис ротации refresh token'а."""
     check_refresh_token(token)
     refresh_token = await refresh_token_crud.get_token_by_hash(
         token_hash=sha256(token.encode()).hexdigest(),

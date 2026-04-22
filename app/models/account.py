@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class Account(Base):
+    """Модель счета."""
+
     balance: Mapped[Decimal] = mapped_column(
         Numeric(precision=15, scale=2),
         CheckConstraint('balance >= 0', name='check_balance_non_negative'),

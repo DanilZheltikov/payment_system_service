@@ -4,11 +4,15 @@ from pydantic import BaseModel, ConfigDict
 
 
 class AccountCreate(BaseModel):
+    """Схема для создания счета."""
+
     id: int
     user_id: int
 
 
 class AccountSchema(BaseModel):
+    """Схема для представления счета."""
+
     id: int
     balance: Decimal
 

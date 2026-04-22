@@ -17,6 +17,7 @@ router = APIRouter()
 
 @router.patch('/{user_id}', response_model=UserRead)
 async def update_user(user_id: int, obj_in: UserUpdate, session: SessionDep):
+    """Обновление данных пользователя."""
     user = await user_crud.get(user_id, session)
     updated_user = await user_crud.update(user, obj_in, session)
     return updated_user
@@ -24,6 +25,7 @@ async def update_user(user_id: int, obj_in: UserUpdate, session: SessionDep):
 
 @router.delete('/{user_id}', response_model=UserRead)
 async def remove_user(user_id: int, session: SessionDep):
+    """Удаление пользователя."""
     user = await user_crud.get(user_id, session)
     user = await user_crud.remove(user, session)
     return user
@@ -31,6 +33,8 @@ async def remove_user(user_id: int, session: SessionDep):
 
 @router.post('/create', response_model=UserRead)
 async def create_user(user: UserCreate, session: SessionDep):
+    """Создание пользователя."""
+
     return await user_create_service(user_in=user, session=session)
 
 
@@ -40,6 +44,8 @@ async def get_users_with_accounts(
     limit: int = 10,
     offset: int = 0
 ):
+    """Запрос всех пользователей со всеми их счетами."""
+
     return await user_crud.get_all_users_with_accounts(limit, offset, session)
 
 

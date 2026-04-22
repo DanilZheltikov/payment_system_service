@@ -10,12 +10,16 @@ from app.models import User
 from app.schemas import UserCreate, UserRead
 
 
-class UserCRUD(CRUDBase):
+class UserCRUD(CRUDBase[User, UserCreate]):
+    """СRUD-класс пользователя."""
+
     async def create(
         self,
         user_in: UserCreate,
         session: AsyncSession
     ) -> UserRead:
+        """Метод создания нового пользователя."""
+
         user_in_data = user_in.model_dump()
         user_in_data['hashed_password'] = get_password_hash(
             user_in_data.pop('password')
@@ -32,6 +36,8 @@ class UserCRUD(CRUDBase):
         email: str,
         session: AsyncSession,
     ) -> User:
+        """Метод получения пользователя по email."""
+
         stmt = select(self.model).where(email == self.model.email)
         result = await session.execute(stmt)
         return result.scalars().first()
@@ -42,6 +48,8 @@ class UserCRUD(CRUDBase):
         offset: int,
         session: AsyncSession
     ) -> List[User]:
+        """Метод получения всех пользователей вместе со всеми их счетами."""
+
         stmt = (
             select(self.model)
             .options(selectinload(self.model.accounts))
@@ -57,6 +65,8 @@ class UserCRUD(CRUDBase):
         user_id: int,
         session: AsyncSession
     ) -> User:
+        """Метод получения одного пользователя вместе со всеми его счетами."""
+
         stmt = (
             select(self.model)
             .where(self.model.id == user_id)

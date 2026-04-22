@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class User(Base):
+    """Модель пользователя."""
+
     first_name: Mapped[str] = mapped_column(String(120), nullable=False)
     last_name: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str] = mapped_column(String(150), unique=True)
@@ -34,4 +36,5 @@ class User(Base):
 
     @property
     def full_name(self):
+        """Полное имя пользователя."""
         return f'{self.first_name} {self.last_name}'.title()

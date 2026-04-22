@@ -4,6 +4,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PaymentRead(BaseModel):
+    """Схема для представления платежа."""
+
     id: int
     amount: Decimal
 
@@ -11,6 +13,8 @@ class PaymentRead(BaseModel):
 
 
 class PaymentWebhook(BaseModel):
+    """Схема для валидации webhook'а."""
+
     transaction_id: str
     account_id: int
     user_id: int

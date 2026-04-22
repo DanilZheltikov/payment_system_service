@@ -1,9 +1,7 @@
-from typing import Annotated
+from fastapi import APIRouter, Response
 
-from fastapi import APIRouter, Depends, Response
-from fastapi.security import OAuth2PasswordRequestForm
 
-from app.dependencies import RefreshTokenDep, SessionDep
+from app.dependencies import FormDataDep, RefreshTokenDep, SessionDep
 from app.core.security import authenticate_user
 from app.core.utils import set_refresh_cookie
 from app.schemas import AccessToken, UserCreate, UserRead
@@ -21,7 +19,7 @@ async def register_user(user: UserCreate, session: SessionDep):
 
 @router.post('/login', response_model=AccessToken)
 async def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    form_data: FormDataDep,
     session: SessionDep,
     response: Response
 ):

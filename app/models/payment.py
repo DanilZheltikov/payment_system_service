@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class Payment(Base):
+    """Модель платежа."""
+
     transaction_id: Mapped[str] = mapped_column(
         String(255),
         unique=True,

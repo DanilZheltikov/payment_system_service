@@ -14,4 +14,5 @@ async def webhook_handle(
     payment: PaymentWebhook,
     session: SessionDep
 ) -> Dict[str, str]:
+    """Прием платежей."""
     return await process_payment(payment, session)

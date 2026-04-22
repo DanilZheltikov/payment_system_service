@@ -22,6 +22,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     """
 
     def __init__(self, model: Type[ModelType]):
+        """Инициализация класса."""
         self.model = model
 
     @or_404
@@ -30,12 +31,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             obj_id: int,
             session: AsyncSession
     ) -> Optional[ModelType]:
-        """Метод GET {obj_id}."""
+        """Метод получения объекта из базы по его id."""
         db_obj = await session.get(self.model, obj_id)
         return db_obj
 
     async def get_multi(self, session: AsyncSession) -> List[ModelType]:
-        """Метод GET."""
+        """Метод получения всех объектов из базы."""
         db_objects = await session.execute(select(self.model))
         return db_objects
 
@@ -47,7 +48,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         commit=True,
         refresh=True
     ) -> ModelType:
-        """Метод POST."""
+        """Метод создания объекта."""
         obj_in_data = obj_in.model_dump()
 
         if user is not None:
@@ -68,7 +69,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         obj_in: UpdateSchemaType,
         session: AsyncSession
     ) -> ModelType:
-        """Метод UPDATE."""
+        """Метод обновления объекта."""
         obj_data = jsonable_encoder(db_obj)
         update_data = obj_in.model_dump()
 
@@ -85,7 +86,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db_obj: ModelType,
         session: AsyncSession
     ) -> ModelType:
-        """Метод DELETE."""
+        """Метод удаления объекта."""
         await session.delete(db_obj)
         await session.commit()
         return db_obj
@@ -97,6 +98,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         limit: int,
         offset: int
     ) -> List[ModelType]:
+        """Метод получения объектов по id пользователя."""
         stmt = (
             select(self.model)
             .where(self.model.user_id == user_id)

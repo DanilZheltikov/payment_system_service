@@ -12,6 +12,8 @@ router = APIRouter()
 
 @router.get('/', response_model=UserRead)
 async def read_current_user(current_user: CurrentUserDep):
+    """Запрос данных текущего пользователя."""
+
     return current_user
 
 
@@ -22,6 +24,8 @@ async def get_my_accounts(
     limit: int = 10,
     offset: int = 0
 ):
+    """Запрос всех счетов текущего пользователя."""
+
     return await account_crud.get_multi_by_user(
         current_user.id,
         session,
@@ -37,6 +41,8 @@ async def get_my_payments(
     limit: int = 10,
     offset: int = 0
 ):
+    """Запрос всех платежей текущего пользователя."""
+
     return await payment_crud.get_multi_by_user(
         current_user.id,
         session,

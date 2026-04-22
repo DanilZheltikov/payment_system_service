@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 
 import jwt
-from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,11 +17,9 @@ from app.schemas import (
     TokenCreatePayload
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
-
 
 def create_jwt(payload: TokenCreatePayload) -> str:
-
+    """Универсальная функция создания JWT."""
     return jwt.encode(
         payload=payload.model_dump(),
         key=settings.secret_key,
@@ -34,6 +31,7 @@ def create_access_token(
     subject: int,
     expires_minutes: int = settings.access_token_expire_minutes
 ) -> str:
+    """Создает access token."""
     expire = (
         datetime.now(tz=timezone.utc)
         + timedelta(minutes=expires_minutes)
@@ -48,6 +46,8 @@ async def create_refresh_token(
     session: AsyncSession,
     expires_minutes: int = settings.refresh_token_expire_minutes
 ) -> str:
+    """Создает, удаляет старый и добавляет новый refresh token в базу."""
+
     expire = (
         datetime.now(tz=timezone.utc)
         + timedelta(minutes=expires_minutes)
@@ -72,6 +72,7 @@ async def authenticate_user_from_token(
     token: str,
     session: AsyncSession
 ) -> User:
+    """Аутентификация пользователя по access token."""
 
     try:
         token_data = AccessTokenPayload(
@@ -100,6 +101,7 @@ async def authenticate_user(
     password: str,
     session: AsyncSession
 ) -> Token:
+    """Аутентификация пользователя по email'у и паролю."""
 
     user = await user_crud.get_user_by_email(email=email, session=session)
 
@@ -116,6 +118,7 @@ async def authenticate_user(
 
 
 def check_refresh_token(token: str):
+    """Проверяет refresh token."""
     try:
         token_data = jwt.decode(
             jwt=token,

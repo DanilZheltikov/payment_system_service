@@ -16,6 +16,7 @@ async def process_payment(
     payment: PaymentWebhook,
     session: AsyncSession,
 ) -> dict[str, str]:
+    """Сервис обработки и валидации webhook'a."""
     expected_sign = sha256(
         (
             f'{payment.account_id}'

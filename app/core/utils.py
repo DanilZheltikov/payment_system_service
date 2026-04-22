@@ -13,14 +13,17 @@ password_hash = PasswordHash.recommended()
 
 
 def verify_password(plain_password, hashed_password):
+    """Верефицирует пароль."""
     return password_hash.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password):
+    """Возвращает хэш пароля."""
     return password_hash.hash(password)
 
 
 def set_refresh_cookie(response: Response, token: str):
+    """Устанавливает refresh token в Cookie."""
     response.set_cookie(
         key='refresh_token',
         value=token,

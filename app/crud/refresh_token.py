@@ -7,12 +7,16 @@ from app.models import RefreshToken
 
 
 class RefreshTokenCRUD(CRUDBase[RefreshToken]):
+    """CRUD-класс refresh token'а."""
+
     @or_404
     async def get_token_by_hash(
         self,
         token_hash: str,
         session: AsyncSession
     ) -> RefreshToken:
+        """Метод получения refresh token'а по его хешу."""
+
         stmt = (
             select(self.model)
             .where(self.model.hashed_token == token_hash)
@@ -21,6 +25,8 @@ class RefreshTokenCRUD(CRUDBase[RefreshToken]):
         return refresh_token.scalars().first()
 
     async def remove_by_user_id(self, user_id: int, session: AsyncSession):
+        """Метод удаления frefresh token'а по id пользователя."""
+
         stmt = delete(self.model).where(self.model.user_id == user_id)
         await session.execute(stmt)
         await session.flush()
