@@ -14,7 +14,6 @@ from app.models import User
 from app.schemas import (
     AccessTokenPayload,
     RefreshTokenCreate,
-    RefreshTokenPayload,
     Token,
     TokenCreatePayload
 )
@@ -49,8 +48,6 @@ async def create_refresh_token(
     session: AsyncSession,
     expires_minutes: int = settings.refresh_token_expire_minutes
 ) -> str:
-    await session.refresh(user, ['refresh_token'])
-
     expire = (
         datetime.now(tz=timezone.utc)
         + timedelta(minutes=expires_minutes)
@@ -109,7 +106,7 @@ async def authenticate_user(
     if not verify_password(password, user.hashed_password):
         raise exceptions.CredentialsException()
 
-    access_token = create_access_token(str(user.id))
+    access_token = create_access_token(user.id)
     refresh_token = await create_refresh_token(user, session)
 
     return Token(
@@ -118,23 +115,18 @@ async def authenticate_user(
     )
 
 
-async def check_refresh_token(token: str, session: AsyncSession):
+def check_refresh_token(token: str):
     try:
-        token_data = RefreshTokenPayload(
-            **jwt.decode(
-                jwt=token,
-                key=settings.secret_key,
-                algorithms=[settings.algorithm]
-            )
+        token_data = jwt.decode(
+            jwt=token,
+            key=settings.secret_key,
+            algorithms=[settings.algorithm]
         )
-        await user_crud.get(token_data.sub, session)
+        if token_data.get('token_type') != 'refresh':
+            raise exceptions.InvalidTokenException()
 
     except jwt.ExpiredSignatureError:
         raise exceptions.TokenExpiredException()
 
-    except (
-        jwt.InvalidTokenError,
-        ValidationError,
-        exceptions.NotFoundException
-    ):
+    except jwt.InvalidTokenError:
         raise exceptions.InvalidTokenException()

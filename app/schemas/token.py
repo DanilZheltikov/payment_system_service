@@ -21,17 +21,10 @@ class RefreshTokenCreate(BaseModel):
     expires: datetime
 
 
-class BaseTokenPayload(BaseModel):
+class AccessTokenPayload(BaseModel):
     sub: int
     exp: datetime
-
-
-class AccessTokenPayload(BaseTokenPayload):
     token_type: Literal['access'] = 'access'
-
-
-class RefreshTokenPayload(BaseTokenPayload):
-    token_type: Literal['refresh'] = 'refresh'
 
 
 class TokenCreatePayload(BaseModel):

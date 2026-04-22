@@ -2,7 +2,7 @@ from hashlib import sha256
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import TokenRevokedException
+from app.core.exceptions import InvalidTokenException, TokenRevokedException
 from app.core.security import (
     check_refresh_token,
     create_access_token,
@@ -16,11 +16,14 @@ async def rotate_refresh_token_service(
     token: str,
     session: AsyncSession
 ) -> Token:
-    await check_refresh_token(token, session)
+    check_refresh_token(token)
     refresh_token = await refresh_token_crud.get_token_by_hash(
         token_hash=sha256(token.encode()).hexdigest(),
         session=session
     )
+    if not refresh_token or not refresh_token.user:
+        raise InvalidTokenException()
+
     if refresh_token.revoked:
         raise TokenRevokedException()
 

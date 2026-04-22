@@ -2,13 +2,11 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.core.utils import or_404
 from app.crud.base import CRUDBase
 from app.models import RefreshToken
 
 
 class RefreshTokenCRUD(CRUDBase):
-    @or_404
     async def get_token_by_hash(
         self,
         token_hash: str,
