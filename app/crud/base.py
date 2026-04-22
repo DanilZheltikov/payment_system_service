@@ -43,7 +43,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self,
         obj_in: CreateSchemaType,
         session: AsyncSession,
-        user: Optional[User] = None
+        user: Optional[User] = None,
+        commit=True,
+        refresh=True
     ) -> ModelType:
         """Метод POST."""
         obj_in_data = obj_in.model_dump()
@@ -52,9 +54,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             obj_in_data['user_id'] = user.id
         db_obj = self.model(**obj_in_data)
         session.add(db_obj)
-        await session.commit()
-        await session.refresh(db_obj)
-
+        if commit:
+            await session.commit()
+            if refresh:
+                await session.refresh(db_obj)
+        else:
+            await session.flush()
         return db_obj
 
     async def update(

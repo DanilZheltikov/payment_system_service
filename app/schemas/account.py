@@ -3,6 +3,11 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict
 
 
+class AccountCreate(BaseModel):
+    id: int
+    user_id: int
+
+
 class AccountSchema(BaseModel):
     id: int
     balance: Decimal

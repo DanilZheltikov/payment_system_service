@@ -44,7 +44,7 @@ def create_access_token(
 
 
 async def create_refresh_token(
-    user: User,
+    user_id: int,
     session: AsyncSession,
     expires_minutes: int = settings.refresh_token_expire_minutes
 ) -> str:
@@ -53,13 +53,13 @@ async def create_refresh_token(
         + timedelta(minutes=expires_minutes)
     )
     refresh_token = create_jwt(
-        TokenCreatePayload(sub=user.id, exp=expire, token_type='refresh')
+        TokenCreatePayload(sub=user_id, exp=expire, token_type='refresh')
     )
-    await refresh_token_crud.remove_by_user_id(user.id, session)
+    await refresh_token_crud.remove_by_user_id(user_id, session)
 
     await refresh_token_crud.create(
         obj_in=RefreshTokenCreate(
-            user_id=user.id,
+            user_id=user_id,
             hashed_token=sha256(refresh_token.encode()).hexdigest(),
             expires=expire
         ),
@@ -107,7 +107,7 @@ async def authenticate_user(
         raise exceptions.CredentialsException()
 
     access_token = create_access_token(user.id)
-    refresh_token = await create_refresh_token(user, session)
+    refresh_token = await create_refresh_token(user.id, session)
 
     return Token(
         access_token=access_token,

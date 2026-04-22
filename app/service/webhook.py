@@ -1,5 +1,6 @@
 from hashlib import sha256
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -8,7 +9,7 @@ from app.core.exceptions import (
     PaymentAlreadyProcessedException
 )
 from app.crud import account_crud, payment_crud, user_crud
-from app.schemas import PaymentWebhook
+from app.schemas import AccountCreate, PaymentWebhook
 
 
 async def process_payment(
@@ -27,17 +28,32 @@ async def process_payment(
     if payment.signature != expected_sign:
         raise InvalidSignatureException()
 
-    async with session.begin():
-        user = await user_crud.get(payment.user_id, session)
-        if await payment_crud.is_exists(payment.transaction_id, session):
-            raise PaymentAlreadyProcessedException()
+    user = await user_crud.get_user_with_accounts(payment.user_id, session)
+    account = {acc.id: acc for acc in user.accounts}.get(payment.account_id)
 
-        account = await account_crud.get_or_create(
-            user.id,
-            payment.account_id,
-            session
+    if not account:
+        account = await account_crud.create(
+            obj_in=AccountCreate(
+                id=payment.account_id,
+                user_id=payment.user_id,
+            ),
+            session=session,
+            commit=False,
+            refresh=False
         )
+    try:
         account.balance += payment.amount
-        await payment_crud.create(payment, session)
+
+        await payment_crud.create(
+            payment,
+            session,
+            commit=False,
+            refresh=False
+        )
+        await session.commit()
+
+    except IntegrityError:
+        await session.rollback()
+        raise PaymentAlreadyProcessedException()
 
     return {'status': 'success'}

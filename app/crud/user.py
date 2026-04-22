@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import selectinload
 
 from app.core.utils import get_password_hash, or_404
 from app.crud.base import CRUDBase
@@ -60,11 +60,11 @@ class UserCRUD(CRUDBase):
         stmt = (
             select(self.model)
             .where(self.model.id == user_id)
-            .options(joinedload(self.model.accounts))
+            .options(selectinload(self.model.accounts))
         )
         result = await session.execute(stmt)
-        user = result.unique().scalar_one_or_none()
-        return user
+
+        return result.scalar_one_or_none()
 
     async def is_exists(
         self,
