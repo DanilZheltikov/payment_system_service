@@ -1,4 +1,4 @@
-from .account import AccountCreate, AccountSchema  # noqa
+from .account import AccountCreate, AccountRead  # noqa
 from .payment import PaymentRead, PaymentWebhook  # noqa
 from .token import (  # noqa
     AccessToken,

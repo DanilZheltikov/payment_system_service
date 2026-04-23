@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import exceptions
@@ -11,6 +12,8 @@ async def user_create_service(
     session: AsyncSession
 ) -> User:
     """Сервис создания юзера."""
-    if await user_crud.is_exists(user_in.email, session):
+    try:
+        return await user_crud.create(user_in=user_in, session=session)
+
+    except IntegrityError:
         raise exceptions.UserExistsException()
-    return await user_crud.create(user_in=user_in, session=session)

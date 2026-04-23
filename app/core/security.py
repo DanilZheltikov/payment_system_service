@@ -47,7 +47,6 @@ async def create_refresh_token(
     expires_minutes: int = settings.refresh_token_expire_minutes
 ) -> str:
     """Создает, удаляет старый и добавляет новый refresh token в базу."""
-
     expire = (
         datetime.now(tz=timezone.utc)
         + timedelta(minutes=expires_minutes)
@@ -55,7 +54,7 @@ async def create_refresh_token(
     refresh_token = create_jwt(
         TokenCreatePayload(sub=user_id, exp=expire, token_type='refresh')
     )
-    await refresh_token_crud.remove_by_user_id(user_id, session)
+    await refresh_token_crud.remove_by_user_id(user_id, session, commit=False)
 
     await refresh_token_crud.create(
         obj_in=RefreshTokenCreate(
@@ -73,7 +72,6 @@ async def authenticate_user_from_token(
     session: AsyncSession
 ) -> User:
     """Аутентификация пользователя по access token."""
-
     try:
         token_data = AccessTokenPayload(
             **jwt.decode(
@@ -102,7 +100,6 @@ async def authenticate_user(
     session: AsyncSession
 ) -> Token:
     """Аутентификация пользователя по email'у и паролю."""
-
     user = await user_crud.get_user_by_email(email=email, session=session)
 
     if not verify_password(password, user.hashed_password):

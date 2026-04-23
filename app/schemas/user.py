@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-from app.schemas import AccountSchema
+from app.schemas import AccountRead
 
 
 class UserCreate(BaseModel):
@@ -43,4 +43,4 @@ class UserRead(BaseModel):
 class UserWithAccountsRead(UserRead):
     """Схема представления пользователя вместе с его счетами."""
 
-    accounts: List[AccountSchema] = []
+    accounts: List[AccountRead] = []

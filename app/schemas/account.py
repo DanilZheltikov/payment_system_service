@@ -10,7 +10,7 @@ class AccountCreate(BaseModel):
     user_id: int
 
 
-class AccountSchema(BaseModel):
+class AccountRead(BaseModel):
     """Схема для представления счета."""
 
     id: int

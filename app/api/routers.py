@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.api.v1.endpoints import (
+from app.api.v1 import (
     admin_router,
     auth_router,
     users_router,

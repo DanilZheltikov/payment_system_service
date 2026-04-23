@@ -30,7 +30,9 @@ async def process_payment(
         raise InvalidSignatureException()
 
     user = await user_crud.get_user_with_accounts(payment.user_id, session)
-    account = {acc.id: acc for acc in user.accounts}.get(payment.account_id)
+    account = {
+        account.id: account for account in user.accounts
+    }.get(payment.account_id)
 
     if not account:
         account = await account_crud.create(
@@ -43,14 +45,14 @@ async def process_payment(
             refresh=False
         )
     try:
-        account.balance += payment.amount
-
         await payment_crud.create(
             payment,
             session,
             commit=False,
             refresh=False
         )
+
+        account.balance += payment.amount
         await session.commit()
 
     except IntegrityError:

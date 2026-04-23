@@ -7,10 +7,10 @@ from sqlalchemy.orm import selectinload
 from app.core.utils import get_password_hash, or_404
 from app.crud.base import CRUDBase
 from app.models import User
-from app.schemas import UserCreate, UserRead
+from app.schemas import UserCreate, UserRead, UserUpdate
 
 
-class UserCRUD(CRUDBase[User, UserCreate]):
+class UserCRUD(CRUDBase[User, UserCreate, UserUpdate]):
     """СRUD-класс пользователя."""
 
     async def create(
@@ -75,18 +75,6 @@ class UserCRUD(CRUDBase[User, UserCreate]):
         result = await session.execute(stmt)
 
         return result.scalar_one_or_none()
-
-    async def is_exists(
-        self,
-        email: str,
-        session: AsyncSession
-    ) -> bool:
-        stmt = (
-            select(self.model)
-            .where(self.model.email == email)
-            .exists()
-        )
-        return await session.scalar(select(stmt))
 
 
 user_crud = UserCRUD(User)

@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.crud import account_crud, payment_crud
 from app.dependencies import CurrentUserDep, SessionDep
-from app.schemas import AccountSchema, PaymentRead, UserRead
+from app.schemas import AccountRead, PaymentRead, UserRead
 
 
 router = APIRouter()
@@ -17,7 +17,7 @@ async def read_current_user(current_user: CurrentUserDep):
     return current_user
 
 
-@router.get('/accounts', response_model=List[AccountSchema])
+@router.get('/accounts', response_model=List[AccountRead])
 async def get_my_accounts(
     current_user: CurrentUserDep,
     session: SessionDep,

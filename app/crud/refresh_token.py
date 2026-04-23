@@ -1,12 +1,12 @@
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.utils import or_404
-from app.crud.base import CRUDBase
+from app.crud.base import UserRelatedBaseCRUD
 from app.models import RefreshToken
 
 
-class RefreshTokenCRUD(CRUDBase[RefreshToken]):
+class RefreshTokenCRUD(UserRelatedBaseCRUD[RefreshToken]):
     """CRUD-класс refresh token'а."""
 
     @or_404
@@ -23,13 +23,6 @@ class RefreshTokenCRUD(CRUDBase[RefreshToken]):
         )
         refresh_token = await session.execute(stmt)
         return refresh_token.scalars().first()
-
-    async def remove_by_user_id(self, user_id: int, session: AsyncSession):
-        """Метод удаления frefresh token'а по id пользователя."""
-
-        stmt = delete(self.model).where(self.model.user_id == user_id)
-        await session.execute(stmt)
-        await session.flush()
 
 
 refresh_token_crud = RefreshTokenCRUD(RefreshToken)
