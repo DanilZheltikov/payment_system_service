@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
 from app.crud import user_crud
 from app.dependencies import SessionDep
@@ -31,7 +31,11 @@ async def remove_user(user_id: int, session: SessionDep):
     return user
 
 
-@router.post('/create', response_model=UserRead)
+@router.post(
+    '/create',
+    response_model=UserRead,
+    status_code=status.HTTP_201_CREATED
+)
 async def create_user(user: UserCreate, session: SessionDep):
     """Создание пользователя."""
 
