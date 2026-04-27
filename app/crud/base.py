@@ -1,4 +1,4 @@
-from typing import Generic, List, Optional, Type, TypeVar
+from typing import Any, Generic, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import select, delete
@@ -92,7 +92,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
 
 class UserRelatedBaseCRUD(
-    CRUDBase[ModelType, CreateSchemaType, UpdateSchemaType]
+    CRUDBase[ModelType, Any, Any],
+    Generic[ModelType]
 ):
     """
     Базовый CRUD класс с операциями для связанных с пользователем моделей.
