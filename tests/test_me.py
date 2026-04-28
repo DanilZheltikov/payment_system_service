@@ -128,8 +128,8 @@ async def test_user_cannot_access_other_user_payments(
     data = response.json()
 
     api_ids = {item['id'] for item in data}
-    user_db_ids = {account.id for account in payments}
-    other_user_db_ids = {account.id for account in other_payments}
+    user_db_ids = {payment.id for payment in payments}
+    other_user_db_ids = {payment.id for payment in other_payments}
 
     assert api_ids == user_db_ids
     assert api_ids.isdisjoint(other_user_db_ids)
