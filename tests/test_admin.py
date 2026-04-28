@@ -67,9 +67,8 @@ async def test_admin_create_user_invalid_long_fields(
         '/admin/users/create',
         json=payload
     )
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert 'detail' in response.json()
-    print(response.json())
 
 
 async def test_create_user_duplicate_email_fails(admin_client, user):

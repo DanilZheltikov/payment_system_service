@@ -1,6 +1,6 @@
 from typing import List
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.schemas import AccountRead
 
@@ -8,9 +8,9 @@ from app.schemas import AccountRead
 class UserCreate(BaseModel):
     """Схема создания юзера."""
 
-    email: EmailStr
-    first_name: str
-    last_name: str
+    email: EmailStr = Field(..., max_length=150)
+    first_name: str = Field(..., max_length=120)
+    last_name: str = Field(..., max_length=120)
     password: str
 
 
