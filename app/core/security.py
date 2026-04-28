@@ -101,7 +101,8 @@ async def authenticate_user(
 ) -> Token:
     """Аутентификация пользователя по email'у и паролю."""
     user = await user_crud.get_user_by_email(email=email, session=session)
-
+    if not user:
+        raise exceptions.AuthException()
     if not verify_password(password, user.hashed_password):
         raise exceptions.CredentialsException()
 

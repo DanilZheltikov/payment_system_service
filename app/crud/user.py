@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,12 +30,11 @@ class UserCRUD(CRUDBase[User, UserCreate, UserUpdate]):
         await session.refresh(user_db)
         return user_db
 
-    @or_404
     async def get_user_by_email(
         self,
         email: str,
         session: AsyncSession,
-    ) -> User:
+    ) -> Optional[User]:
         """Метод получения пользователя по email."""
 
         stmt = select(self.model).where(email == self.model.email)

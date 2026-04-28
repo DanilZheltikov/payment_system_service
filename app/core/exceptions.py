@@ -22,6 +22,11 @@ class BaseAuthException(HTTPException):
         super().__init__(self.status_code, self.detail, self.headers)
 
 
+class AuthException(BaseAuthException):
+    detail = 'Неверный логин или пароль'
+    headers = None
+
+
 class CredentialsException(BaseAuthException):
     """Исключение неверных учетных данных пришедших через токен."""
 
