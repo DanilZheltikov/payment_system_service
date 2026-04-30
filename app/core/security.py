@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
-from typing import Literal, Optional
+from typing import Literal, NewType, Optional
 
 import jwt
 from pydantic import ValidationError
@@ -19,6 +19,8 @@ from app.schemas import (
     TokenCreatePayload
 )
 
+UserId = NewType('UserId', int)
+
 
 def create_jwt(payload: TokenCreatePayload) -> str:
     """Универсальная функция создания JWT."""
@@ -30,7 +32,7 @@ def create_jwt(payload: TokenCreatePayload) -> str:
 
 
 def _create_token_payload(
-    subject: int,
+    subject: UserId,
     expires_delta: timedelta,
     token_type: Literal['access', 'refresh'],
     now: Optional[datetime] = None
@@ -49,7 +51,7 @@ def _create_token_payload(
 
 
 def create_access_token(
-    subject: int,
+    subject: UserId,
     expires_minutes: int = settings.access_token_expire_minutes
 ) -> str:
     """Создает access token."""
@@ -64,7 +66,7 @@ def create_access_token(
 
 
 async def create_refresh_token(
-    user_id: int,
+    subject: UserId,
     session: AsyncSession,
     expires_minutes: int = settings.refresh_token_expire_minutes
 ) -> str:
@@ -74,17 +76,17 @@ async def create_refresh_token(
 
     refresh_token = create_jwt(
         _create_token_payload(
-            subject=user_id,
+            subject=subject,
             expires_delta=timedelta(minutes=expires_minutes),
             token_type='refresh',
             now=now
         )
     )
-    await refresh_token_crud.remove_by_user_id(user_id, session, commit=False)
+    await refresh_token_crud.remove_by_user_id(subject, session, commit=False)
 
     await refresh_token_crud.create(
         obj_in=RefreshTokenCreate(
-            user_id=user_id,
+            user_id=subject,
             hashed_token=sha256(refresh_token.encode()).hexdigest(),
             expires=now + expires_delta
         ),

@@ -28,7 +28,7 @@ async def rotate_refresh_token_service(
     return Token(
         access_token=create_access_token(refresh_token.user_id),
         refresh_token=await create_refresh_token(
-            user_id=refresh_token.user_id,
+            subject=refresh_token.user_id,
             session=session
         )
     )
