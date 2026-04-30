@@ -1,5 +1,7 @@
+import uuid
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
+from typing import Literal, Optional
 
 import jwt
 from pydantic import ValidationError
@@ -27,17 +29,37 @@ def create_jwt(payload: TokenCreatePayload) -> str:
     )
 
 
+def _create_token_payload(
+    subject: int,
+    expires_delta: timedelta,
+    token_type: Literal['access', 'refresh'],
+    now: Optional[datetime] = None
+) -> TokenCreatePayload:
+
+    if not now:
+        now = datetime.now(tz=timezone.utc)
+
+    return TokenCreatePayload(
+        sub=str(subject),
+        iat=int(now.timestamp()),
+        exp=int((now + expires_delta).timestamp()),
+        jti=str(uuid.uuid4()),
+        token_type=token_type
+    )
+
+
 def create_access_token(
     subject: int,
     expires_minutes: int = settings.access_token_expire_minutes
 ) -> str:
     """Создает access token."""
-    expire = (
-        datetime.now(tz=timezone.utc)
-        + timedelta(minutes=expires_minutes)
-    )
+
     return create_jwt(
-        TokenCreatePayload(sub=subject, exp=expire, token_type='access')
+        _create_token_payload(
+            subject,
+            timedelta(minutes=expires_minutes),
+            'access'
+        )
     )
 
 
@@ -47,12 +69,16 @@ async def create_refresh_token(
     expires_minutes: int = settings.refresh_token_expire_minutes
 ) -> str:
     """Создает, удаляет старый и добавляет новый refresh token в базу."""
-    expire = (
-        datetime.now(tz=timezone.utc)
-        + timedelta(minutes=expires_minutes)
-    )
+    now = datetime.now(tz=timezone.utc)
+    expires_delta = timedelta(minutes=expires_minutes)
+
     refresh_token = create_jwt(
-        TokenCreatePayload(sub=user_id, exp=expire, token_type='refresh')
+        _create_token_payload(
+            subject=user_id,
+            expires_delta=timedelta(minutes=expires_minutes),
+            token_type='refresh',
+            now=now
+        )
     )
     await refresh_token_crud.remove_by_user_id(user_id, session, commit=False)
 
@@ -60,7 +86,7 @@ async def create_refresh_token(
         obj_in=RefreshTokenCreate(
             user_id=user_id,
             hashed_token=sha256(refresh_token.encode()).hexdigest(),
-            expires=expire
+            expires=now + expires_delta
         ),
         session=session
     )
@@ -81,7 +107,7 @@ async def authenticate_user_from_token(
             )
         )
 
-        return await user_crud.get(token_data.sub, session)
+        return await user_crud.get(int(token_data.sub), session)
 
     except jwt.ExpiredSignatureError:
         raise exceptions.TokenExpiredException()
