@@ -151,7 +151,6 @@ async def authenticate_user(
 def check_refresh_token(token: str):
     """Проверяет refresh token."""
     try:
-
         RefreshTokenPayload(
             **jwt.decode(
                 jwt=token,
