@@ -1,25 +1,26 @@
-from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from hashlib import sha256
+from typing import Any, Awaitable, Callable
 from uuid import uuid4
 
 import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Account, Payment, RefreshToken, User
-from app.core.security import create_jwt
-from app.schemas import TokenCreatePayload
+from app.models import Account, Payment, User
 from app.core.utils import get_password_hash
 
 
 @pytest_asyncio.fixture
-def user_factory(get_test_async_session):
-    async def create_user(**kwargs):
+def user_factory(
+    get_test_async_session: AsyncSession,
+    user_password: str
+) -> Callable[[Any], Awaitable[User]]:
+    async def create_user(**kwargs) -> User:
         user = User(
             email=kwargs.get('email', 'test@test.com'),
             first_name=kwargs.get('first_name', 'test_name'),
             last_name=kwargs.get('last_name', 'test_last_name'),
             hashed_password=get_password_hash(
-                kwargs.get('password', 'test_password')
+                kwargs.get('password', user_password)
             ),
             is_active=kwargs.get('is_active', True),
             is_admin=kwargs.get('is_admin', False)
@@ -34,8 +35,10 @@ def user_factory(get_test_async_session):
 
 
 @pytest_asyncio.fixture
-def account_factory(get_test_async_session):
-    async def create_account(user, **kwargs):
+def account_factory(
+    get_test_async_session: AsyncSession
+) -> Callable[[User], Awaitable[Account]]:
+    async def create_account(user: User, **kwargs) -> Account:
         account = Account(
             balance=kwargs.get('balance', Decimal('0.00')),
             user_id=user.id
@@ -49,8 +52,15 @@ def account_factory(get_test_async_session):
 
 
 @pytest_asyncio.fixture
-def payment_factory(get_test_async_session):
-    async def create_payment(account, user, **kwargs):
+def payment_factory(
+    get_test_async_session: AsyncSession
+) -> Callable[[Account, User], Awaitable[Payment]]:
+
+    async def create_payment(
+        account: Account,
+        user: User,
+        **kwargs
+    ) -> Payment:
         payment = Payment(
             transaction_id=kwargs.get('transaction_id', str(uuid4())),
             amount=kwargs.get('amount', Decimal('10.00')),
@@ -64,30 +74,3 @@ def payment_factory(get_test_async_session):
         return payment
 
     return create_payment
-
-
-@pytest_asyncio.fixture
-def refresh_token_factory(get_async_session):
-    async def create_refresh_token(user, **kwargs):
-        expire = kwargs.pop(
-            'expires',
-            datetime.now(timezone.utc) + timedelta(days=7)
-        )
-        raw_jwt = create_jwt(
-            TokenCreatePayload(sub=user.id, exp=expire, token_type='refresh')
-        )
-        token = RefreshToken(
-            expires=expire,
-            revoked=kwargs.pop('revoked', False),
-            hashed_token=sha256(raw_jwt.encode()).hexdigest(),
-            user_id=user.id,
-            **kwargs
-        )
-
-        get_async_session.add(token)
-        await get_async_session.flush()
-
-        token.raw_token = raw_jwt
-
-        return token
-    return create_refresh_token
