@@ -1,15 +1,18 @@
+from typing import Awaitable, Callable
+
 import pytest_asyncio
 
-
-@pytest_asyncio.fixture
-async def user(user_factory):
-    return await user_factory(is_active=True)
+from app.models import User
 
 
 @pytest_asyncio.fixture
-async def admin(user_factory):
+async def user(user_factory: Callable[..., Awaitable[User]]) -> User:
+    return await user_factory()
+
+
+@pytest_asyncio.fixture
+async def admin(user_factory: Callable[..., Awaitable[User]]) -> User:
     return await user_factory(
         email='testadmin@admin.com',
-        is_active=True,
         is_admin=True
     )
