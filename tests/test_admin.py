@@ -1,44 +1,36 @@
 from http import HTTPStatus
+from typing import Optional
 
 import pytest
 from httpx import AsyncClient
+from pytest_lazy_fixtures.lazy_fixture import lf
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import User
+from app.models import Account, User
 
 
-NEW_USER_PAYLOAD = {
-    'email': 'created_user@email.com',
-    'first_name': 'donatello',
-    'last_name': 'turtle',
-    'password': 'donatelospassword'
-}
-USER_UPDATE_PAYLOAD = {
-    'first_name': 'splinter',
-    'last_name': 'rat',
-    'is_active': True,
-    'is_admin': False
-}
-
-
-async def test_admin_can_create_user(admin_client, get_test_async_session):
+async def test_admin_can_create_user(
+    admin_client: AsyncClient,
+    new_user_payload: dict,
+    get_test_async_session: AsyncSession
+):
     response = await admin_client.post(
         '/admin/users/create',
-        json=NEW_USER_PAYLOAD
+        json=new_user_payload
     )
 
     assert response.status_code == HTTPStatus.CREATED
 
     data = response.json()
 
-    query = select(User).where(User.email == NEW_USER_PAYLOAD['email'])
+    query = select(User).where(User.email == new_user_payload['email'])
     result = await get_test_async_session.execute(query)
     user_in_db = result.scalars().first()
 
     assert user_in_db is not None
     assert user_in_db.id == data['id']
-    assert user_in_db.email == NEW_USER_PAYLOAD['email']
+    assert user_in_db.email == new_user_payload['email']
     assert user_in_db.full_name == data['full_name']
 
 
@@ -51,9 +43,9 @@ async def test_admin_can_create_user(admin_client, get_test_async_session):
     ]
 )
 async def test_admin_create_user_invalid_long_fields(
-    admin_client,
-    field,
-    value
+    admin_client: AsyncClient,
+    field: str,
+    value: str
 ):
     payload = {
         'email': 'lichking@frostmorn.com',
@@ -71,10 +63,15 @@ async def test_admin_create_user_invalid_long_fields(
     assert 'detail' in response.json()
 
 
-async def test_create_user_duplicate_email_fails(admin_client, user):
+async def test_create_user_duplicate_email_fails(
+    admin_client: AsyncClient,
+    user: User,
+    new_user_payload: dict
+):
+    new_user_payload['email'] = user.email
     response = await admin_client.post(
         '/admin/users/create',
-        json={**NEW_USER_PAYLOAD, 'email': user.email}
+        json=new_user_payload
     )
     assert response.status_code == HTTPStatus.CONFLICT
     assert 'detail' in response.json()
@@ -82,13 +79,14 @@ async def test_create_user_duplicate_email_fails(admin_client, user):
 
 async def test_admin_can_update_user(
     admin_client: AsyncClient,
-    user,
-    get_test_async_session
+    user: User,
+    user_update_payload: dict,
+    get_test_async_session: AsyncSession
 ):
     user_id = user.id
     response = await admin_client.patch(
         url=f'/admin/users/{user_id}',
-        json=USER_UPDATE_PAYLOAD
+        json=user_update_payload
     )
     data = response.json()
 
@@ -104,8 +102,8 @@ async def test_admin_can_update_user(
     assert user_in_db.id == data['id']
     assert user_in_db.email == data['email']
     assert user_in_db.full_name == data['full_name']
-    assert user_in_db.first_name == USER_UPDATE_PAYLOAD['first_name']
-    assert user_in_db.last_name == USER_UPDATE_PAYLOAD['last_name']
+    assert user_in_db.first_name == user_update_payload['first_name']
+    assert user_in_db.last_name == user_update_payload['last_name']
 
 
 async def test_admin_can_delete_user(
@@ -130,7 +128,7 @@ async def test_admin_can_delete_user(
 async def test_admin_can_get_user_with_accounts(
     admin_client: AsyncClient,
     user: User,
-    user_accounts: list
+    user_accounts: list[Account]
 ):
     response = await admin_client.get(f'/admin/users/{user.id}')
 
@@ -153,10 +151,10 @@ async def test_admin_can_get_user_with_accounts(
 
 async def test_admin_can_get_users_with_accounts(
     admin_client: AsyncClient,
-    user,
-    admin,
-    user_accounts: list,
-    other_user_accounts: list,
+    user: User,
+    admin: User,
+    user_accounts: list[Account],
+    other_user_accounts: list[Account],
 ):
     response = await admin_client.get('/admin/users/')
 
@@ -178,18 +176,18 @@ async def test_admin_can_get_users_with_accounts(
 @pytest.mark.parametrize(
     'url, method, payload',
     [
-        ('/admin/users/create', 'POST', NEW_USER_PAYLOAD),
-        ('/admin/users/300', 'PATCH', USER_UPDATE_PAYLOAD),
+        ('/admin/users/create', 'POST', lf('new_user_payload')),
+        ('/admin/users/300', 'PATCH', lf('user_update_payload')),
         ('/admin/users/300', 'DELETE', None),
         ('/admin/users/300', 'GET', None),
         ('/admin/users/', 'GET', None)
     ]
 )
 async def test_not_admin_cant_use_admins_endpoints(
-    auth_client,
-    url,
-    method,
-    payload
+    auth_client: AsyncClient,
+    url: str,
+    method: str,
+    payload: Optional[dict]
 ):
     response = await auth_client.request(method=method, url=url, json=payload)
 
