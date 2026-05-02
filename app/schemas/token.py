@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 
 
 class AccessToken(BaseModel):
@@ -25,16 +25,6 @@ class RefreshTokenCreate(BaseModel):
     expires: datetime
 
 
-class AccessTokenPayload(BaseModel):
-    """Схема для валидации access token'а."""
-
-    sub: str
-    iat: int
-    exp: int
-    jti: str
-    token_type: Literal['access'] = 'access'
-
-
 class TokenCreatePayload(BaseModel):
     """Схема для кодирования токенов."""
 
@@ -42,4 +32,18 @@ class TokenCreatePayload(BaseModel):
     iat: datetime
     exp: datetime
     jti: str
-    token_type: Literal['access', 'refresh']
+    token_type: str
+
+    @field_serializer('iat', 'exp')
+    def serialize_dt(self, dt: datetime) -> int:
+        return int(dt.timestamp())
+    
+
+class AccessTokenPayload(TokenCreatePayload):
+    """Схема для валидации access token'а."""
+    token_type: Literal['access'] = 'access'
+
+
+class RefreshTokenPayload(TokenCreatePayload):
+    """Схема для валидации refreh token'а."""
+    token_type: Literal['refresh'] = 'refresh'

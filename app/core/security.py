@@ -15,6 +15,7 @@ from app.models import User
 from app.schemas import (
     AccessTokenPayload,
     RefreshTokenCreate,
+    RefreshTokenPayload,
     Token,
     TokenCreatePayload
 )
@@ -25,7 +26,7 @@ UserId = NewType('UserId', int)
 def create_jwt(payload: TokenCreatePayload) -> str:
     """Универсальная функция создания JWT."""
     return jwt.encode(
-        payload=payload.model_dump(),
+        payload=payload.model_dump(mode='json'),
         key=settings.secret_key,
         algorithm=settings.algorithm
     )
@@ -38,13 +39,17 @@ def _create_token_payload(
     now: Optional[datetime] = None
 ) -> TokenCreatePayload:
 
+    token_map = {
+        'access': AccessTokenPayload,
+        'refresh': RefreshTokenPayload
+    }
     if not now:
         now = datetime.now(tz=timezone.utc)
 
-    return TokenCreatePayload(
+    return token_map[token_type](
         sub=str(subject),
-        iat=int(now.timestamp()),
-        exp=int((now + expires_delta).timestamp()),
+        iat=now,
+        exp=now + expires_delta,
         jti=str(uuid.uuid4()),
         token_type=token_type
     )
@@ -146,16 +151,17 @@ async def authenticate_user(
 def check_refresh_token(token: str):
     """Проверяет refresh token."""
     try:
-        token_data = jwt.decode(
-            jwt=token,
-            key=settings.secret_key,
-            algorithms=[settings.algorithm]
+
+        RefreshTokenPayload(
+            **jwt.decode(
+                jwt=token,
+                key=settings.secret_key,
+                algorithms=[settings.algorithm]
+            )
         )
-        if token_data.get('token_type') != 'refresh':
-            raise exceptions.InvalidTokenException()
 
     except jwt.ExpiredSignatureError:
         raise exceptions.TokenExpiredException()
 
-    except jwt.InvalidTokenError:
+    except (jwt.InvalidTokenError, ValidationError):
         raise exceptions.InvalidTokenException()
