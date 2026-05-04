@@ -16,8 +16,7 @@ class Payment(Base):
 
     transaction_id: Mapped[str] = mapped_column(
         String(255),
-        unique=True,
-        index=True
+        unique=True
     )
     amount: Mapped[Decimal] = mapped_column(
         Numeric(precision=15, scale=2),
