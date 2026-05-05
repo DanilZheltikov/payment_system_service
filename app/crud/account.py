@@ -9,7 +9,7 @@ from app.models import Account
 from app.schemas import AccountCreate
 
 
-class AccountCRUD(UserRelatedBaseCRUD[Account, AccountCreate]):
+class AccountCRUD(UserRelatedBaseCRUD[Account]):
     """CRUD класс счета."""
 
     async def get_or_create_with_lock(
