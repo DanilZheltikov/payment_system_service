@@ -6,7 +6,7 @@ from app.core.constants import (
     MAX_LEN_EMAIL,
     MAX_LEN_FIRST_NAME,
     MAX_LEN_LAST_NAME,
-    MAX_LEN_PASSWORD
+    MIN_LEN_PASSWORD
 )
 from app.schemas import AccountRead
 
@@ -17,7 +17,7 @@ class UserCreate(BaseModel):
     email: EmailStr = Field(..., max_length=MAX_LEN_EMAIL)
     first_name: str = Field(..., max_length=MAX_LEN_FIRST_NAME)
     last_name: str = Field(..., max_length=MAX_LEN_LAST_NAME)
-    password: str = Field(..., max_length=MAX_LEN_PASSWORD)
+    password: str = Field(..., min_length=MIN_LEN_PASSWORD)
 
 
 class UserLogin(BaseModel):
