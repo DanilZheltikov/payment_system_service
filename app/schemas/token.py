@@ -37,7 +37,7 @@ class TokenCreatePayload(BaseModel):
     @field_serializer('iat', 'exp')
     def serialize_dt(self, dt: datetime) -> int:
         return int(dt.timestamp())
-    
+
 
 class AccessTokenPayload(TokenCreatePayload):
     """Схема для валидации access token'а."""

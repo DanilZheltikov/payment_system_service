@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.core.constants import MAX_LEN_TRANSACTION_ID, MIN_AMOUNT, SCALE
+
 
 class PaymentRead(BaseModel):
     """Схема для представления платежа."""
@@ -15,10 +17,10 @@ class PaymentRead(BaseModel):
 class PaymentCreate(BaseModel):
     """Схема для создания платежа в базе."""
 
-    transaction_id: str
+    transaction_id: str = Field(..., max_length=MAX_LEN_TRANSACTION_ID)
     account_id: int
     user_id: int
-    amount: Decimal = Field(..., gt=0, decimal_places=2)
+    amount: Decimal = Field(..., gt=MIN_AMOUNT, decimal_places=SCALE)
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -4,6 +4,12 @@ from typing import TYPE_CHECKING
 from sqlalchemy import CheckConstraint, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.constants import (
+    MAX_LEN_TRANSACTION_ID,
+    MIN_AMOUNT,
+    PRECISION,
+    SCALE
+)
 from app.core.db import Base
 
 if TYPE_CHECKING:
@@ -15,12 +21,15 @@ class Payment(Base):
     """Модель платежа."""
 
     transaction_id: Mapped[str] = mapped_column(
-        String(255),
+        String(MAX_LEN_TRANSACTION_ID),
         unique=True
     )
     amount: Mapped[Decimal] = mapped_column(
-        Numeric(precision=15, scale=2),
-        CheckConstraint('amount > 0', name='check_amount_non_negative'),
+        Numeric(precision=PRECISION, scale=SCALE),
+        CheckConstraint(
+            f'amount > {MIN_AMOUNT}',
+            name='check_amount_non_negative'
+        ),
         nullable=False
     )
     account_id: Mapped[int] = mapped_column(
