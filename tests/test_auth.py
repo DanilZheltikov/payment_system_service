@@ -9,6 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import create_access_token, create_refresh_token
 from app.models import RefreshToken, User
 from app.schemas import Token
+from tests.test_me import PROFILE_URL, USERS_ACCOUNTS_URL, USERS_PAYMENTS_URL
+
+LOGIN_URL = '/auth/login'
+REFRESH_URL = '/auth/refresh'
+REGISTER_URL = '/auth/register'
 
 
 async def test_user_can_register(
@@ -16,7 +21,7 @@ async def test_user_can_register(
     new_user_payload: dict,
     get_test_async_session: AsyncSession
 ):
-    response = await client.post('/auth/register', json=new_user_payload)
+    response = await client.post(REGISTER_URL, json=new_user_payload)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -51,7 +56,7 @@ async def test_user_cant_register_invalid_long_fields(
 ):
     new_user_payload[field] = value
 
-    response = await client.post('/auth/register', json=new_user_payload)
+    response = await client.post(REGISTER_URL, json=new_user_payload)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert 'detail' in response.json()
 
@@ -63,7 +68,7 @@ async def test_register_duplicate_email(
 ):
     new_user_payload['email'] = user.email
 
-    response = await client.post('/auth/register', json=new_user_payload)
+    response = await client.post(REGISTER_URL, json=new_user_payload)
     assert response.status_code == HTTPStatus.CONFLICT
     assert 'detail' in response.json()
 
@@ -74,7 +79,7 @@ async def test_user_can_login(
     user_password: str
 ):
     response = await client.post(
-        '/auth/login',
+        LOGIN_URL,
         data={'username': user.email, 'password': user_password}
     )
     assert response.status_code == HTTPStatus.OK
@@ -99,7 +104,7 @@ async def test_login_fail(
     client: AsyncClient
 ):
     response = await client.post(
-        'auth/login',
+        LOGIN_URL,
         data={'username': email, 'password': password}
     )
     assert response.status_code == expected_status
@@ -112,7 +117,7 @@ async def test_access_token_is_work(
     client: AsyncClient
 ):
     response = await client.post(
-        '/auth/login',
+        LOGIN_URL,
         data={'username': user.email, 'password': user_password}
     )
     assert response.status_code == HTTPStatus.OK
@@ -120,7 +125,7 @@ async def test_access_token_is_work(
     token = response.json()['access_token']
     auth_headers = {'Authorization': f'Bearer {token}'}
 
-    response_with_token = await client.get('/me/', headers=auth_headers)
+    response_with_token = await client.get(PROFILE_URL, headers=auth_headers)
 
     assert response_with_token.status_code == HTTPStatus.OK
 
@@ -130,7 +135,10 @@ async def test_access_token_is_work(
     assert data['full_name'] == user.full_name
 
 
-@pytest.mark.parametrize('url', ['/me/', '/me/accounts', 'me/payments'])
+@pytest.mark.parametrize(
+    'url',
+    [PROFILE_URL, USERS_ACCOUNTS_URL, USERS_PAYMENTS_URL]
+)
 async def test_get_me_without_invalid_access_token(
     url: str,
     client: AsyncClient
@@ -147,13 +155,13 @@ async def test_access_token_expired(client: AsyncClient, user: User):
     expired_token = create_access_token(user.id, expires_minutes=0)
 
     response = await client.get(
-        '/me/',
+        PROFILE_URL,
         headers={'Authorization': f'Bearer {normal_token}'}
     )
     assert response.status_code == HTTPStatus.OK
 
     response_with_expired_token = await client.get(
-        '/me/',
+        PROFILE_URL,
         headers={'Authorization': f'Bearer {expired_token}'}
     )
     assert response_with_expired_token.status_code == HTTPStatus.UNAUTHORIZED
@@ -162,14 +170,14 @@ async def test_access_token_expired(client: AsyncClient, user: User):
 
 async def test_refresh_is_work(client_with_refresh: AsyncClient):
 
-    response = await client_with_refresh.post('/auth/refresh')
+    response = await client_with_refresh.post(REFRESH_URL)
 
     assert response.status_code == HTTPStatus.OK
 
     token = Token.model_validate(response.json())
 
     auth_response = await client_with_refresh.get(
-        '/me/',
+        PROFILE_URL,
         headers={'Authorization': f'Bearer {token.access_token}'}
     )
     assert auth_response.status_code == HTTPStatus.OK
@@ -189,7 +197,7 @@ async def test_refresh_token_rotation(
     old_refresh_from_db = old_record.scalar_one_or_none()
     assert old_refresh_from_db is not None
 
-    response = await client_with_refresh.post('auth/refresh')
+    response = await client_with_refresh.post(REFRESH_URL)
     assert response.status_code == HTTPStatus.OK
 
     get_test_async_session.expire_all()
@@ -227,14 +235,14 @@ async def test_refresh_token_expired(
 
     client.cookies.set('refresh_token', expired_token)
 
-    response = await client.post('/auth/refresh')
+    response = await client.post(REFRESH_URL)
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert 'detail' in response.json()
 
 
 async def test_refresh_token_revoked(client_with_revoked_refresh: AsyncClient):
-    response = await client_with_revoked_refresh.post('/auth/refresh')
+    response = await client_with_revoked_refresh.post(REFRESH_URL)
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert 'detail' in response.json()
@@ -244,7 +252,7 @@ async def test_invalid_refresh_token(client: AsyncClient):
     invalid_token = 'abrakadabra'
     client.cookies.set('refresh_token', invalid_token)
 
-    response = await client.post('/auth/refresh')
+    response = await client.post(REFRESH_URL)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert 'detail' in response.json()

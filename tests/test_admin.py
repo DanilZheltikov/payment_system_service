@@ -9,6 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Account, User
 
+USER_CREATE_URL = '/admin/users/create'
+USERS_URL = '/admin/users/'
+
 
 async def test_admin_can_create_user(
     admin_client: AsyncClient,
@@ -16,7 +19,7 @@ async def test_admin_can_create_user(
     get_test_async_session: AsyncSession
 ):
     response = await admin_client.post(
-        '/admin/users/create',
+        USER_CREATE_URL,
         json=new_user_payload
     )
 
@@ -56,7 +59,7 @@ async def test_admin_create_user_invalid_long_fields(
     payload[field] = value
 
     response = await admin_client.post(
-        '/admin/users/create',
+        USER_CREATE_URL,
         json=payload
     )
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -70,7 +73,7 @@ async def test_create_user_duplicate_email_fails(
 ):
     new_user_payload['email'] = user.email
     response = await admin_client.post(
-        '/admin/users/create',
+        USER_CREATE_URL,
         json=new_user_payload
     )
     assert response.status_code == HTTPStatus.CONFLICT
@@ -85,7 +88,7 @@ async def test_admin_can_update_user(
 ):
     user_id = user.id
     response = await admin_client.patch(
-        url=f'/admin/users/{user_id}',
+        USERS_URL + f'{user_id}',
         json=user_update_payload
     )
     data = response.json()
@@ -112,7 +115,7 @@ async def test_admin_can_delete_user(
     get_test_async_session: AsyncSession
 ):
     user_id = user.id
-    response = await admin_client.delete(f'/admin/users/{user_id}')
+    response = await admin_client.delete(USERS_URL + f'{user_id}')
 
     assert response.status_code == HTTPStatus.OK
 
@@ -130,7 +133,7 @@ async def test_admin_can_get_user_with_accounts(
     user: User,
     user_accounts: list[Account]
 ):
-    response = await admin_client.get(f'/admin/users/{user.id}')
+    response = await admin_client.get(USERS_URL + f'{user.id}')
 
     assert response.status_code == HTTPStatus.OK
 
@@ -156,7 +159,7 @@ async def test_admin_can_get_users_with_accounts(
     user_accounts: list[Account],
     other_user_accounts: list[Account],
 ):
-    response = await admin_client.get('/admin/users/')
+    response = await admin_client.get(USERS_URL)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -176,11 +179,11 @@ async def test_admin_can_get_users_with_accounts(
 @pytest.mark.parametrize(
     'url, method, payload',
     [
-        ('/admin/users/create', 'POST', lf('new_user_payload')),
-        ('/admin/users/300', 'PATCH', lf('user_update_payload')),
-        ('/admin/users/300', 'DELETE', None),
-        ('/admin/users/300', 'GET', None),
-        ('/admin/users/', 'GET', None)
+        (USER_CREATE_URL, 'POST', lf('new_user_payload')),
+        (USERS_URL + '300', 'PATCH', lf('user_update_payload')),
+        (USERS_URL + '300', 'DELETE', None),
+        (USERS_URL + '300', 'GET', None),
+        (USERS_URL, 'GET', None)
     ]
 )
 async def test_not_admin_cant_use_admins_endpoints(

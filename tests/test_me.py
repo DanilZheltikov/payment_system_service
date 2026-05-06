@@ -6,6 +6,10 @@ from pytest_lazy_fixtures.lazy_fixture import lf
 
 from app.schemas import AccountRead, PaymentRead, UserRead
 
+PROFILE_URL = '/me/'
+USERS_ACCOUNTS_URL = '/me/accounts'
+USERS_PAYMENTS_URL = '/me/payments'
+
 
 @pytest.mark.parametrize(
     'api_client, user_fixture, expected_status',
@@ -19,7 +23,7 @@ async def test_user_has_access_to_information_about_himself(
     user_fixture,
     expected_status
 ):
-    response = await api_client.get('/me/')
+    response = await api_client.get(PROFILE_URL)
     assert response.status_code == expected_status, (
         'При корректном запросе был получен не соответствующий ожидаемому '
         f'статус код - `{response.status_code}`'
@@ -38,7 +42,7 @@ async def test_user_has_access_to_information_about_himself(
     ]
 )
 async def test_the_user_has_access_to_his_accounts(api_client, accounts):
-    response = await api_client.get('/me/accounts')
+    response = await api_client.get(USERS_ACCOUNTS_URL)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -61,7 +65,7 @@ async def test_the_user_has_access_to_his_accounts(api_client, accounts):
 )
 async def test_the_user_has_access_to_his_payments(api_client, payments):
 
-    response = await api_client.get('/me/payments')
+    response = await api_client.get(USERS_PAYMENTS_URL)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -74,7 +78,10 @@ async def test_the_user_has_access_to_his_payments(api_client, payments):
     assert api_payments == db_payments
 
 
-@pytest.mark.parametrize('url', ['/me/', '/me/accounts', '/me/payments'])
+@pytest.mark.parametrize(
+    'url',
+    [PROFILE_URL, USERS_ACCOUNTS_URL, USERS_PAYMENTS_URL]
+)
 async def test_anonymous_user_should_not_access_me_endpoint(url, client):
     response = await client.get(url)
 
@@ -95,7 +102,7 @@ async def test_user_cannot_access_other_user_accounts(
     other_accounts
 ):
 
-    response = await api_client.get('/me/accounts')
+    response = await api_client.get(USERS_ACCOUNTS_URL)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -121,7 +128,7 @@ async def test_user_cannot_access_other_user_payments(
     payments,
     other_payments
 ):
-    response = await api_client.get('/me/payments')
+    response = await api_client.get(USERS_PAYMENTS_URL)
 
     assert response.status_code == HTTPStatus.OK
 
