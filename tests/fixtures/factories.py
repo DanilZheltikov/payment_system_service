@@ -1,12 +1,15 @@
 from decimal import Decimal
+from hashlib import sha256
 from typing import Any, Awaitable, Callable
 from uuid import uuid4
 
+import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Account, Payment, User
+from app.core.config import settings
 from app.core.utils import get_password_hash
+from app.models import Account, Payment, User
 
 
 @pytest_asyncio.fixture
@@ -74,3 +77,38 @@ def payment_factory(
         return payment
 
     return create_payment
+
+
+@pytest.fixture
+def webhook_payload_factory(
+    user: User,
+    account: Account
+) -> Callable[..., dict[str, Any]]:
+
+    def create_webhook_payload(
+        transaction_id: str | None = None,
+        amount: float | int | str = '1500.55',
+        secret: str = settings.secret_key_to_webhook,
+        **kwargs: Any
+    ) -> dict[str, Any]:
+        payload = {
+            'account_id': account.id,
+            'amount': str(amount),
+            'transaction_id': transaction_id or str(uuid4()),
+            'user_id': user.id
+        }
+        payload.update(kwargs)
+
+        raw_str = (
+            f"{payload['account_id']}"
+            f"{payload['amount']}"
+            f"{payload['transaction_id']}"
+            f"{payload['user_id']}"
+            f"{secret}"
+        )
+
+        payload['signature'] = sha256(raw_str.encode()).hexdigest()
+
+        return payload
+
+    return create_webhook_payload
