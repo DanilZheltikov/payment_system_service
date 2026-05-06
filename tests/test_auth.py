@@ -6,6 +6,11 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.constants import (
+    MAX_LEN_EMAIL,
+    MAX_LEN_FIRST_NAME,
+    MAX_LEN_LAST_NAME
+)
 from app.core.security import create_access_token, create_refresh_token
 from app.models import RefreshToken, User
 from app.schemas import Token
@@ -14,6 +19,7 @@ from tests.test_me import PROFILE_URL, USERS_ACCOUNTS_URL, USERS_PAYMENTS_URL
 LOGIN_URL = '/auth/login'
 REFRESH_URL = '/auth/refresh'
 REGISTER_URL = '/auth/register'
+EXPIRES_MINUTES = 0
 
 
 async def test_user_can_register(
@@ -43,9 +49,9 @@ async def test_user_can_register(
 @pytest.mark.parametrize(
     'field, value',
     [
-        ('email', 'l' * 150 + '@email.com'),
-        ('first_name', 'a' * 121),
-        ('last_name', 'm' * 121)
+        ('email', 'l' * MAX_LEN_EMAIL + '@email.com'),
+        ('first_name', 'a' * (MAX_LEN_FIRST_NAME + 1)),
+        ('last_name', 'm' * (MAX_LEN_LAST_NAME + 1))
     ]
 )
 async def test_user_cant_register_invalid_long_fields(
@@ -143,7 +149,7 @@ async def test_get_me_without_invalid_access_token(
     url: str,
     client: AsyncClient
 ):
-    invalid_auth_headers = {'Authorization': 'Bearer ' + 'abrakadabra' * 5}
+    invalid_auth_headers = {'Authorization': 'Bearer ' + 'abrakadabra'}
     response = await client.get(url, headers=invalid_auth_headers)
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
@@ -230,7 +236,7 @@ async def test_refresh_token_expired(
     expired_token = await create_refresh_token(
         subject=user.id,
         session=get_test_async_session,
-        expires_minutes=0
+        expires_minutes=EXPIRES_MINUTES
     )
 
     client.cookies.set('refresh_token', expired_token)

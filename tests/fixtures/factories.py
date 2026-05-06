@@ -8,8 +8,11 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.constants import MIN_AMOUNT
 from app.core.utils import get_password_hash
 from app.models import Account, Payment, User
+
+DEFAULT_WEBHOOK_AMOUNT = '1550.55'
 
 
 @pytest_asyncio.fixture
@@ -43,7 +46,7 @@ def account_factory(
 ) -> Callable[[User], Awaitable[Account]]:
     async def create_account(user: User, **kwargs) -> Account:
         account = Account(
-            balance=kwargs.get('balance', Decimal('0.00')),
+            balance=kwargs.get('balance', Decimal(MIN_AMOUNT)),
             user_id=user.id
         )
         get_test_async_session.add(account)
@@ -66,7 +69,7 @@ def payment_factory(
     ) -> Payment:
         payment = Payment(
             transaction_id=kwargs.get('transaction_id', str(uuid4())),
-            amount=kwargs.get('amount', Decimal('10.00')),
+            amount=kwargs.get('amount', Decimal(MIN_AMOUNT)),
             account_id=account.id,
             user_id=user.id
         )
@@ -87,13 +90,14 @@ def webhook_payload_factory(
 
     def create_webhook_payload(
         transaction_id: str | None = None,
-        amount: float | int | str = '1500.55',
+        amount: float | int | str = DEFAULT_WEBHOOK_AMOUNT,
         secret: str = settings.secret_key_to_webhook,
         **kwargs: Any
     ) -> dict[str, Any]:
+        formatted_amount = f'{Decimal(amount):.2f}'
         payload = {
             'account_id': account.id,
-            'amount': str(amount),
+            'amount': formatted_amount,
             'transaction_id': transaction_id or str(uuid4()),
             'user_id': user.id
         }

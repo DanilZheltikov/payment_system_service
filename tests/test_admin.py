@@ -7,10 +7,16 @@ from pytest_lazy_fixtures.lazy_fixture import lf
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.constants import (
+    MAX_LEN_EMAIL,
+    MAX_LEN_FIRST_NAME,
+    MAX_LEN_LAST_NAME
+)
 from app.models import Account, User
 
 USER_CREATE_URL = '/admin/users/create'
 USERS_URL = '/admin/users/'
+SOME_THING_USER_ID = 300
 
 
 async def test_admin_can_create_user(
@@ -40,9 +46,9 @@ async def test_admin_can_create_user(
 @pytest.mark.parametrize(
     'field, value',
     [
-        ('email', 'l' * 150 + '@email.com'),
-        ('first_name', 'a' * 121),
-        ('last_name', 'm' * 121)
+        ('email', 'l' * MAX_LEN_EMAIL + '@email.com'),
+        ('first_name', 'a' * (MAX_LEN_FIRST_NAME + 1)),
+        ('last_name', 'm' * (MAX_LEN_LAST_NAME + 1))
     ]
 )
 async def test_admin_create_user_invalid_long_fields(
@@ -180,9 +186,9 @@ async def test_admin_can_get_users_with_accounts(
     'url, method, payload',
     [
         (USER_CREATE_URL, 'POST', lf('new_user_payload')),
-        (USERS_URL + '300', 'PATCH', lf('user_update_payload')),
-        (USERS_URL + '300', 'DELETE', None),
-        (USERS_URL + '300', 'GET', None),
+        (USERS_URL + SOME_THING_USER_ID, 'PATCH', lf('user_update_payload')),
+        (USERS_URL + SOME_THING_USER_ID, 'DELETE', None),
+        (USERS_URL + SOME_THING_USER_ID, 'GET', None),
         (USERS_URL, 'GET', None)
     ]
 )

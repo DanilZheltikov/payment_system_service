@@ -5,13 +5,15 @@ import pytest_asyncio
 
 from app.models import Account, Payment, User
 
+ACCOUNTS_COUNT = 5
+
 
 @pytest_asyncio.fixture
 async def user_accounts(
     user: User,
     account_factory: Callable
 ) -> list[Account]:
-    return [await account_factory(user=user) for _ in range(5)]
+    return [await account_factory(user=user) for _ in range(ACCOUNTS_COUNT)]
 
 
 @pytest_asyncio.fixture
@@ -19,7 +21,7 @@ async def other_user_accounts(
     admin: User,
     account_factory: Callable
 ) -> list[Account]:
-    return [await account_factory(user=admin) for _ in range(5)]
+    return [await account_factory(user=admin) for _ in range(ACCOUNTS_COUNT)]
 
 
 @pytest_asyncio.fixture
