@@ -25,16 +25,16 @@ async def process_payment(
     await user_crud.get(payment.user_id, session)
 
     try:
+        account = await account_crud.get_or_create_with_lock(
+            account_id=payment.account_id,
+            user_id=payment.user_id,
+            session=session
+        )
         await payment_crud.create(
             PaymentCreate(**payment.model_dump(exclude={'signature'})),
             session,
             commit=False,
             refresh=False
-        )
-        account = await account_crud.get_or_create_with_lock(
-            account_id=payment.account_id,
-            user_id=payment.user_id,
-            session=session
         )
         await account_crud.update_balance_atomic(
             account_id=account.id,
