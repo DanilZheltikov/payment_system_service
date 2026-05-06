@@ -35,20 +35,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self,
         obj_in: CreateSchemaType,
         session: AsyncSession,
-        commit=True,
-        refresh=True
     ) -> ModelType:
         """Метод создания объекта."""
         obj_in_data = obj_in.model_dump()
 
         db_obj = self.model(**obj_in_data)
         session.add(db_obj)
-        if commit:
-            await session.commit()
-            if refresh:
-                await session.refresh(db_obj)
-        else:
-            await session.flush()
+        await session.flush()
+
         return db_obj
 
     async def update(
@@ -56,8 +50,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db_obj: ModelType,
         obj_in: UpdateSchemaType,
         session: AsyncSession,
-        commit=True,
-        refresh=True
     ) -> ModelType:
         """Метод обновления объекта."""
         update_data = obj_in.model_dump(exclude_unset=True)
@@ -67,26 +59,16 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 setattr(db_obj, field, value)
 
         session.add(db_obj)
-        if commit:
-            await session.commit()
-            if refresh:
-                await session.refresh(db_obj)
-        else:
-            await session.flush()
+        await session.flush()
         return db_obj
 
     async def remove(
         self,
         db_obj: ModelType,
         session: AsyncSession,
-        commit=True
     ) -> ModelType:
         """Метод удаления объекта."""
         await session.delete(db_obj)
-        if commit:
-            await session.commit()
-        else:
-            await session.flush()
 
         return db_obj
 
@@ -120,13 +102,9 @@ class UserRelatedBaseCRUD(
         self,
         user_id: int,
         session: AsyncSession,
-        commit=True
     ):
         """Удаление объекта по id пользователя."""
         stmt = delete(self.model).where(self.model.user_id == user_id)
         await session.execute(stmt)
 
-        if commit:
-            await session.commit()
-        else:
-            await session.flush()
+        # await session.flush()

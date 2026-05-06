@@ -32,9 +32,7 @@ async def process_payment(
         )
         await payment_crud.create(
             PaymentCreate(**payment.model_dump(exclude={'signature'})),
-            session,
-            commit=False,
-            refresh=False
+            session
         )
         await account_crud.update_balance_atomic(
             account_id=account.id,

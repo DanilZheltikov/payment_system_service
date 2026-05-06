@@ -23,9 +23,7 @@ class AccountCRUD(UserRelatedBaseCRUD[Account]):
             async with session.begin_nested():
                 return await self.create(
                     obj_in=AccountCreate(id=account_id, user_id=user_id),
-                    session=session,
-                    commit=False,
-                    refresh=False
+                    session=session
                 )
 
         except IntegrityError:

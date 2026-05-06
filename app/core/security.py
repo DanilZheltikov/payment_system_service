@@ -87,7 +87,7 @@ async def create_refresh_token(
             now=now
         )
     )
-    await refresh_token_crud.remove_by_user_id(subject, session, commit=False)
+    await refresh_token_crud.remove_by_user_id(subject, session)
 
     await refresh_token_crud.create(
         obj_in=RefreshTokenCreate(

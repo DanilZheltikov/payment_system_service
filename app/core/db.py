@@ -34,4 +34,5 @@ AsyncSessionLocal = sessionmaker(
 async def get_async_session():
     """Отдает асинхронное соединение с базой данных."""
     async with AsyncSessionLocal() as async_session:
-        yield async_session
+        async with async_session.begin():
+            yield async_session

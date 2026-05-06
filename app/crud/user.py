@@ -26,8 +26,8 @@ class UserCRUD(CRUDBase[User, UserCreate, UserUpdate]):
         )
         user_db = self.model(**user_in_data)
         session.add(user_db)
-        await session.commit()
-        await session.refresh(user_db)
+        await session.flush()
+
         return user_db
 
     async def get_user_by_email(
