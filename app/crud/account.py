@@ -4,6 +4,7 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.utils import or_404
 from app.crud.base import UserRelatedBaseCRUD
 from app.models import Account
 from app.schemas import AccountCreate
@@ -12,12 +13,13 @@ from app.schemas import AccountCreate
 class AccountCRUD(UserRelatedBaseCRUD[Account]):
     """CRUD класс счета."""
 
+    @or_404
     async def get_or_create_with_lock(
         self,
         account_id: int,
         user_id: int,
         session: AsyncSession
-    ) -> Account:
+    ) -> Account | None:
         """Создает или получает счет с блокировкой."""
         try:
             async with session.begin_nested():
@@ -31,10 +33,15 @@ class AccountCRUD(UserRelatedBaseCRUD[Account]):
 
         result = await session.execute(
             select(self.model)
-            .where(self.model.id == account_id)
+            .where(
+                self.model.id == account_id,
+                self.model.user_id == user_id
+            )
             .with_for_update()
         )
-        return result.scalar_one()
+        account = result.scalar_one_or_none()
+
+        return account
 
     async def update_balance_atomic(
         self,
