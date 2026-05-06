@@ -1,5 +1,4 @@
-from random import choice
-from typing import Any, Awaitable, Callable
+from typing import Awaitable, Callable
 
 import pytest
 import pytest_asyncio
@@ -78,17 +77,3 @@ def user_update_payload() -> dict:
 @pytest.fixture
 def user_password() -> str:
     return 'supersecretpassword'
-
-
-@pytest.fixture
-def webhookpayload(
-    webhook_payload_factory: Callable[..., dict[str, Any]]
-) -> dict[str, Any]:
-    return webhook_payload_factory()
-
-
-@pytest.fixture
-def webhook_payload_with_random_account_id(
-    webhook_payload_factory: Callable[..., dict[str, Any]]
-) -> dict[str, Any]:
-    return webhook_payload_factory(account_id=choice(range(1, 999)))
