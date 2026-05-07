@@ -4,6 +4,7 @@ from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
 from fastapi import Response
 from pwdlib import PasswordHash
 
+from app.core.config import settings
 from app.core.exceptions import NotFoundException
 
 P = ParamSpec('P')
@@ -27,10 +28,11 @@ def set_refresh_cookie(response: Response, token: str):
     response.set_cookie(
         key='refresh_token',
         value=token,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-        max_age=60 * 60 * 24
+        httponly=settings.cookie_httponly,
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+        max_age=settings.refresh_token_expire_minutes * 60,
+        path=settings.cookie_path
     )
 
 

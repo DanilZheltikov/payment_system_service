@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int
     refresh_token_expire_minutes: int
 
+    cookie_secure: bool = False,
+    cookie_httponly: bool = True,
+    cookie_samesite: str = "lax"
+    cookie_path: str = '/api/auth/refresh'
+
     model_config = SettingsConfigDict(
         env_file='.env',
         env_file_encoding='utf-8',
