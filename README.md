@@ -80,6 +80,12 @@
    - `ALGORITHM`
    - `ACCESS_TOKEN_EXPIRE_MINUTES`
    - `REFRESH_TOKEN_EXPIRE_MINUTES`
+   - ***Для автоматического создания админа и обычного пользователя заполнить:***
+      - `USER_EMAIL`
+      - `USER_PASSWORD`
+      - `ADMIN_EMAIL`
+      - `ADMIN_PASSWORD`
+  
 4. Установить зависимости:
    ```bash
    pip install -r requirements.txt
