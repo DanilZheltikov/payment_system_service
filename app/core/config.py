@@ -12,10 +12,15 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int
     refresh_token_expire_minutes: int
 
-    cookie_secure: bool = False,
-    cookie_httponly: bool = True,
+    cookie_secure: bool = False
+    cookie_httponly: bool = True
     cookie_samesite: str = "lax"
-    cookie_path: str = '/api/auth/refresh'
+    cookie_path: str = '/api/auth/'
+
+    user_email: str = 'user@example.com'
+    user_password: str = 'superpassword'
+    admin_email: str = 'admin@example.com'
+    admin_password: str = 'superpassword'
 
     model_config = SettingsConfigDict(
         env_file='.env',
