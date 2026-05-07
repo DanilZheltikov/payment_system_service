@@ -16,7 +16,7 @@ from app.models import Account, User
 
 USER_CREATE_URL = '/admin/users/create'
 USERS_URL = '/admin/users/'
-SOME_THING_USER_ID = 300
+SOME_THING_USER_ID = '300'
 
 
 async def test_admin_can_create_user(

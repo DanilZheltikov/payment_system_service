@@ -13,6 +13,7 @@ from app.core.utils import get_password_hash
 from app.models import Account, Payment, User
 
 DEFAULT_WEBHOOK_AMOUNT = '1550.55'
+MIN_AMOUNT_PAYMENT = '10.00'
 
 
 @pytest_asyncio.fixture
@@ -69,7 +70,7 @@ def payment_factory(
     ) -> Payment:
         payment = Payment(
             transaction_id=kwargs.get('transaction_id', str(uuid4())),
-            amount=kwargs.get('amount', Decimal(MIN_AMOUNT)),
+            amount=kwargs.get('amount', Decimal(MIN_AMOUNT_PAYMENT)),
             account_id=account.id,
             user_id=user.id
         )
