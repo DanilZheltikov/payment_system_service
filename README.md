@@ -1,7 +1,7 @@
 # Payment System Service
 
 **Payment System Service** - Сервис обработки платежей с JWT-аутентификацией и ротацией refresh-токенов.<br>
-Сервис родился из [тестового задания](https://example.com), которое я немного перевыполнил.
+Сервис родился из [тестового задания](https://github.com/DanilZheltikov/payment_system_service/tree/main/technical%20specifications), которое я немного перевыполнил.
 
 ## Стек
 
@@ -70,10 +70,13 @@
   - создает платеж и обновляет баланс счета
 
 ## Установка и запуск
-
-1. Создать `.env` файл.
-2. Установить и запустить `PostgreSQL`
-3. Заполнить переменные:
+1. Клонировать репозиторий 
+   ```bash
+   git clone https://github.com/DanilZheltikov/payment_system_service.git
+   ```
+2. Создать `.env` файл.
+3. Установить и запустить `PostgreSQL`
+4. Заполнить переменные:
    - `DATABASE_URL`
    - `SECRET_KEY`
    - `SECRET_KEY_TO_WEBHOOK`
@@ -86,15 +89,15 @@
       - `ADMIN_EMAIL`
       - `ADMIN_PASSWORD`
   
-4. Установить зависимости:
+5. Установить зависимости:
    ```bash
    pip install -r requirements.txt
    ```
-5. Применить миграции:
+6. Применить миграции:
    ```bash
    alembic upgrade head
    ```
-6. Запустить:
+7. Запустить:
    ```bash
     uvicorn app.main:app --reload
    ```
