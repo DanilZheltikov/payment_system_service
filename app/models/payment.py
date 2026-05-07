@@ -11,14 +11,16 @@ from app.core.constants import (
     SCALE
 )
 from app.core.db import Base
+from app.models.mixins import UserRelationMixin
 
 if TYPE_CHECKING:
-    from app.models.user import User
     from app.models.account import Account
 
 
-class Payment(Base):
+class Payment(UserRelationMixin, Base):
     """Модель платежа."""
+
+    _user_back_populates = 'payments'
 
     transaction_id: Mapped[str] = mapped_column(
         String(MAX_LEN_TRANSACTION_ID),
@@ -37,8 +39,3 @@ class Payment(Base):
         nullable=False
     )
     account: Mapped['Account'] = relationship(back_populates='payments')
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey('user.id'),
-        nullable=False
-    )
-    user: Mapped['User'] = relationship(back_populates='payments')

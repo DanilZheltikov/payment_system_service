@@ -1,19 +1,21 @@
 from decimal import Decimal
 from typing import List, TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, ForeignKey, Numeric
+from sqlalchemy import CheckConstraint, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.constants import DEFAULT_AMOUNT, MIN_AMOUNT, PRECISION, SCALE
 from app.core.db import Base
+from app.models.mixins import UserRelationMixin
 
 if TYPE_CHECKING:
-    from app.models.user import User
     from app.models.payment import Payment
 
 
-class Account(Base):
+class Account(UserRelationMixin, Base):
     """Модель счета."""
+
+    _user_back_populates = 'accounts'
 
     balance: Mapped[Decimal] = mapped_column(
         Numeric(precision=PRECISION, scale=SCALE),
@@ -24,8 +26,4 @@ class Account(Base):
         default=Decimal(DEFAULT_AMOUNT),
         nullable=False
     )
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey('user.id', ondelete='CASCADE')
-    )
-    user: Mapped['User'] = relationship(back_populates='accounts')
     payments: Mapped[List['Payment']] = relationship(back_populates='account')

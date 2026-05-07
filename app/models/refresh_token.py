@@ -1,27 +1,19 @@
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
-
-if TYPE_CHECKING:
-    from app.models.user import User
+from app.models.mixins import UserRelationMixin
 
 
-class RefreshToken(Base):
+class RefreshToken(UserRelationMixin, Base):
     """Модель refresh token'а."""
 
+    _user_id_unique = True
+    _user_back_populates = 'refresh_token'
+
     hashed_token: Mapped[str] = mapped_column(String(), unique=True)
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey(
-            'user.id',
-            ondelete='CASCADE'
-        ),
-        unique=True
-    )
-    user: Mapped['User'] = relationship(back_populates='refresh_token')
     expires: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False
