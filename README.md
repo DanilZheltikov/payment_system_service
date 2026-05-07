@@ -120,6 +120,6 @@ docker compose up --build
 pytest
 ```
 
-### Автор:man_technologist::
+### Автор :man_technologist::
 
 [Danil Zheltikov](https://github.com/DanilZheltikov)
