@@ -10,7 +10,7 @@ from app.models import Account
 from app.schemas import AccountCreate
 
 
-class AccountCRUD(UserRelatedBaseCRUD[Account]):
+class AccountCRUD(UserRelatedBaseCRUD[Account, AccountCreate]):
     """CRUD класс счета."""
 
     @or_404

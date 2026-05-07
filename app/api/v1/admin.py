@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, status
 
 from app.crud import user_crud
@@ -42,7 +40,7 @@ async def create_user(user: UserCreate, session: SessionDep):
     return await user_create_service(user_in=user, session=session)
 
 
-@router.get('/', response_model=List[UserWithAccountsRead])
+@router.get('/', response_model=list[UserWithAccountsRead])
 async def get_users_with_accounts(
     session: SessionDep,
     limit: int = 10,

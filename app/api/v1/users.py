@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter
 
 from app.crud import account_crud, payment_crud
@@ -17,7 +15,7 @@ async def read_current_user(current_user: CurrentUserDep):
     return current_user
 
 
-@router.get('/accounts', response_model=List[AccountRead])
+@router.get('/accounts', response_model=list[AccountRead])
 async def get_my_accounts(
     current_user: CurrentUserDep,
     session: SessionDep,
@@ -34,7 +32,7 @@ async def get_my_accounts(
     )
 
 
-@router.get('/payments', response_model=List[PaymentRead])
+@router.get('/payments', response_model=list[PaymentRead])
 async def get_my_payments(
     current_user: CurrentUserDep,
     session: SessionDep,

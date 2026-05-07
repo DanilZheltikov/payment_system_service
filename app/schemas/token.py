@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Literal
+from typing import Literal
 
 from pydantic import BaseModel, field_serializer
 
@@ -14,7 +14,7 @@ class AccessToken(BaseModel):
 class Token(AccessToken):
     """Cхема для передачи пары токенов."""
 
-    refresh_token: Optional[str] = None
+    refresh_token: str | None = None
 
 
 class RefreshTokenCreate(BaseModel):

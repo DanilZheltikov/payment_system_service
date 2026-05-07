@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
-from typing import Literal, NewType, Optional
+from typing import Literal, NewType
 
 import jwt
 from pydantic import ValidationError
@@ -36,7 +36,7 @@ def _create_token_payload(
     subject: UserId,
     expires_delta: timedelta,
     token_type: Literal['access', 'refresh'],
-    now: Optional[datetime] = None
+    now: datetime | None = None
 ) -> TokenCreatePayload:
 
     token_map = {

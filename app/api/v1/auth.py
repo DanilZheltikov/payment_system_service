@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Response
 
-
 from app.dependencies import FormDataDep, RefreshTokenDep, SessionDep
 from app.core.security import authenticate_user
 from app.core.utils import set_refresh_cookie

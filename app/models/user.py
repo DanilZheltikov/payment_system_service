@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -38,11 +38,11 @@ class User(Base):
         cascade='all, delete-orphan',
         uselist=False
     )
-    accounts: Mapped[List['Account']] = relationship(
+    accounts: Mapped[list['Account']] = relationship(
         back_populates='user',
         cascade='all, delete-orphan'
     )
-    payments: Mapped[List['Payment']] = relationship(
+    payments: Mapped[list['Payment']] = relationship(
         back_populates='user',
         cascade='all, delete-orphan'
     )

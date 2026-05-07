@@ -1,5 +1,3 @@
-from typing import Dict
-
 from fastapi import APIRouter
 
 from app.dependencies import SessionDep
@@ -13,6 +11,6 @@ router = APIRouter()
 async def webhook_handle(
     payment: PaymentWebhook,
     session: SessionDep
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Прием платежей."""
     return await process_payment(payment, session)

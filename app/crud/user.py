@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -7,7 +5,7 @@ from sqlalchemy.orm import selectinload
 from app.core.utils import get_password_hash, or_404
 from app.crud.base import CRUDBase
 from app.models import User
-from app.schemas import UserCreate, UserRead, UserUpdate
+from app.schemas import UserCreate, UserUpdate
 
 
 class UserCRUD(CRUDBase[User, UserCreate, UserUpdate]):
@@ -17,7 +15,7 @@ class UserCRUD(CRUDBase[User, UserCreate, UserUpdate]):
         self,
         user_in: UserCreate,
         session: AsyncSession
-    ) -> UserRead:
+    ) -> User:
         """Метод создания нового пользователя."""
 
         user_in_data = user_in.model_dump()
@@ -34,19 +32,19 @@ class UserCRUD(CRUDBase[User, UserCreate, UserUpdate]):
         self,
         email: str,
         session: AsyncSession,
-    ) -> Optional[User]:
+    ) -> User | None:
         """Метод получения пользователя по email."""
 
         stmt = select(self.model).where(email == self.model.email)
         result = await session.execute(stmt)
-        return result.scalars().first()
+        return result.scalar_one_or_none()
 
     async def get_all_users_with_accounts(
         self,
         limit: int,
         offset: int,
         session: AsyncSession
-    ) -> List[User]:
+    ) -> list[User]:
         """Метод получения всех пользователей вместе со всеми их счетами."""
 
         stmt = (
@@ -63,7 +61,7 @@ class UserCRUD(CRUDBase[User, UserCreate, UserUpdate]):
         self,
         user_id: int,
         session: AsyncSession
-    ) -> User:
+    ) -> User | None:
         """Метод получения одного пользователя вместе со всеми его счетами."""
 
         stmt = (

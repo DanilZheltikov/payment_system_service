@@ -5,7 +5,7 @@ from app.crud import user_crud
 from app.models import User
 
 
-async def create_first_users() -> None:
+async def create_first_users():
     async with get_session() as session:
         if not await user_crud.get_user_by_email(settings.user_email, session):
             session.add(

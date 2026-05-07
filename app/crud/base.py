@@ -1,4 +1,4 @@
-from typing import Any, Generic, List, Optional, Type, TypeVar
+from typing import Any, Generic, Type, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import select, delete
@@ -26,7 +26,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             self,
             obj_id: int,
             session: AsyncSession
-    ) -> Optional[ModelType]:
+    ) -> ModelType | None:
         """Метод получения объекта из базы по его id."""
         db_obj = await session.get(self.model, obj_id)
         return db_obj
@@ -74,8 +74,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
 
 class UserRelatedBaseCRUD(
-    CRUDBase[ModelType, Any, Any],
-    Generic[ModelType]
+    CRUDBase[ModelType, CreateSchemaType, Any],
+    Generic[ModelType, CreateSchemaType]
 ):
     """
     Базовый CRUD класс с операциями для связанных с пользователем моделей.
@@ -87,7 +87,7 @@ class UserRelatedBaseCRUD(
         session: AsyncSession,
         limit: int,
         offset: int,
-    ) -> List[ModelType]:
+    ) -> list[ModelType]:
         """Метод получения объектов по id пользователя."""
         stmt = (
             select(self.model)
@@ -106,5 +106,3 @@ class UserRelatedBaseCRUD(
         """Удаление объекта по id пользователя."""
         stmt = delete(self.model).where(self.model.user_id == user_id)
         await session.execute(stmt)
-
-        # await session.flush()
